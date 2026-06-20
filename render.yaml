@@ -30,26 +30,12 @@ services:
     plan: free
     region: oregon
     envVars:
-      - key: DB_HOST
-        fromDatabase:
-          name: futureos-postgres
-          property: host
-      - key: DB_PORT
-        fromDatabase:
-          name: futureos-postgres
-          property: port
-      - key: DB_USERNAME
-        fromDatabase:
-          name: futureos-postgres
-          property: user
-      - key: DB_PASSWORD
-        fromDatabase:
-          name: futureos-postgres
-          property: password
       - key: SPRING_DATASOURCE_URL
-        fromDatabase:
-          name: futureos-postgres
-          property: connectionString
+        value: jdbc:postgresql://dpg-d8rf4fsm0tmc73c44320-a/futureos
+      - key: DB_USERNAME
+        value: futureos
+      - key: DB_PASSWORD
+        value: ZpcOdE0orc4T34A7u58xICMx00t178FE
       - key: JWT_SECRET
         sync: false
       - key: AI_BASE_URL
