@@ -50,8 +50,8 @@ export function AuthPage() {
             <i className="ti ti-brain" style={{ color: "#fff", fontSize: 20 }} />
           </div>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 600, color: "#F1F5F9" }}>FutureOS</div>
-            <div style={{ fontSize: 11, color: "#475569" }}>Clarity Through AI</div>
+            <div style={{ fontSize: 22, fontWeight: 600, color: "#F1F5F9" }}>FutureOS</div>
+            <div style={{ fontSize: 18, color: "#475569" }}>AI Life Decision Simulator</div>
           </div>
         </div>
 

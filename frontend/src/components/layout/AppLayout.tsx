@@ -61,8 +61,8 @@ export function AppLayout() {
               <i className="ti ti-brain" style={{ color: "#fff", fontSize: 16 }} />
             </div>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: "#F1F5F9", letterSpacing: "-0.01em" }}>FutureOS</div>
-              <div style={{ fontSize: 10, color: "#475569", lineHeight: 1.4 }}>Clarity Through AI</div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: "#F1F5F9", letterSpacing: "-0.01em" }}>FutureOS</div>
+              <div style={{ fontSize: 12, color: "#475569", lineHeight: 1.4 }}>AI Life Decision Simulator</div>
             </div>
           </div>
         </div>
