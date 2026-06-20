@@ -60,6 +60,35 @@ public class AiClient {
         return postJson("/ai/accountability", request);
     }
 
+    public Map<String, Object> lifeExperimentPlan(Map<String, Object> request) {
+        return postJsonSoft("/ai/life-experiment", request);
+    }
+
+    public Map<String, Object> lifeExperimentVerdict(Map<String, Object> request) {
+        return postJsonSoft("/ai/life-experiment/verdict", request);
+    }
+
+    /**
+     * Like postJson, but returns null instead of throwing when the AI service
+     * doesn't implement the route yet (404) or is unreachable. Callers that can
+     * fall back to local logic (e.g. life-experiment plan/verdict) should use
+     * this; callers with no fallback (onboarding, roadmap, gap-analysis) should
+     * keep using postJson so failures surface clearly instead of silently
+     * degrading.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private Map<String, Object> postJsonSoft(String uri, Map<String, Object> payload) {
+        try {
+            return postJson(uri, payload);
+        } catch (org.springframework.web.client.HttpClientErrorException.NotFound notFound) {
+            log.warn("FutureOS AiClient ← {} not implemented by AI service yet (404). Falling back to local logic.", uri);
+            return null;
+        } catch (org.springframework.web.client.RestClientException ex) {
+            log.warn("FutureOS AiClient ← {} call failed ({}). Falling back to local logic.", uri, ex.getMessage());
+            return null;
+        }
+    }
+
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private Map<String, Object> postJson(String uri, Map<String, Object> payload) {

@@ -247,8 +247,8 @@ public class WorkflowService {
 
     @Transactional
     public TaskItem updateTask(User user, Long id, TaskStatusRequest request) {
+        if (!tasks.existsByIdAndUserId(id, user.id)) throw new IllegalArgumentException("Not your task");
         TaskItem task = tasks.findById(id).orElseThrow();
-        if (!task.user.id.equals(user.id)) throw new IllegalArgumentException("Not your task");
         task.status = request.status();
         TaskItem saved = tasks.save(task);
         adaptRoadmapFromProgress(user, "DONE".equalsIgnoreCase(request.status()) ? "Task completed" : "Task reopened or missed");
@@ -270,10 +270,142 @@ public class WorkflowService {
 
     @Transactional
     public LifeExperiment updateExperiment(User user, Long id, ExperimentStatusRequest request) {
+        if (!experiments.existsByIdAndUserId(id, user.id)) throw new IllegalArgumentException("Not your experiment");
         LifeExperiment experiment = experiments.findById(id).orElseThrow();
-        if (!experiment.user.id.equals(user.id)) throw new IllegalArgumentException("Not your experiment");
         experiment.status = request.status();
         return experiments.save(experiment);
+    }
+
+    @Transactional
+    public LifeExperiment generateLifeExperiment(User user, GenerateExperimentRequest request) {
+        int days = request.durationDays() == null ? 7 : request.durationDays();
+
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("pathA", request.pathA());
+        payload.put("pathB", request.pathB());
+        payload.put("durationDays", days);
+
+        Map<String, Object> generated = ai.lifeExperimentPlan(payload);
+        if (generated == null) generated = Map.of();
+
+        LifeExperiment experiment = new LifeExperiment();
+        experiment.user = user;
+        experiment.title = request.pathA() + " vs " + request.pathB();
+        experiment.hypothesis = string(generated.getOrDefault("hypothesis",
+                "Running parallel daily tasks for " + request.pathA() + " and " + request.pathB()
+                        + " will reveal which path feels more aligned."));
+        experiment.durationDays = days;
+        experiment.successMetric = string(generated.getOrDefault("successMetric",
+                "Higher average Interest + Enjoyment, lower average Difficulty, across the week."));
+        experiment.status = "RUNNING";
+        experiment.pathA = request.pathA();
+        experiment.pathB = request.pathB();
+        experiment.dayPlanJson = json(generated.getOrDefault("dayPlan", defaultDayPlan(request.pathA(), request.pathB(), days)));
+        experiment.checkinsJson = json(List.of());
+        return experiments.save(experiment);
+    }
+
+    @Transactional
+    public LifeExperiment recordExperimentCheckin(User user, Long id, ExperimentCheckinRequest request) {
+        if (!experiments.existsByIdAndUserId(id, user.id)) throw new IllegalArgumentException("Not your experiment");
+        LifeExperiment experiment = experiments.findById(id).orElseThrow();
+
+        List<Map<String, Object>> checkins = readCheckins(experiment.checkinsJson);
+        Map<String, Object> entry = new LinkedHashMap<>();
+        entry.put("day", request.day());
+        entry.put("path", request.path());
+        entry.put("interest", request.interest());
+        entry.put("difficulty", request.difficulty());
+        entry.put("enjoyment", request.enjoyment());
+        entry.put("notes", request.notes() == null ? "" : request.notes());
+
+        checkins.removeIf(c -> request.day().equals(c.get("day")) && request.path().equals(c.get("path")));
+        checkins.add(entry);
+        experiment.checkinsJson = json(checkins);
+        return experiments.save(experiment);
+    }
+
+    @Transactional
+    public LifeExperiment getExperimentVerdict(User user, Long id) {
+        if (!experiments.existsByIdAndUserId(id, user.id)) throw new IllegalArgumentException("Not your experiment");
+        LifeExperiment experiment = experiments.findById(id).orElseThrow();
+
+        List<Map<String, Object>> checkins = readCheckins(experiment.checkinsJson);
+
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("pathA", experiment.pathA);
+        payload.put("pathB", experiment.pathB);
+        payload.put("hypothesis", experiment.hypothesis);
+        payload.put("checkins", checkins);
+
+        Map<String, Object> verdict = ai.lifeExperimentVerdict(payload);
+        if (verdict == null || verdict.isEmpty()) {
+            verdict = computeFallbackVerdict(experiment.pathA, experiment.pathB, checkins);
+        }
+        experiment.verdictJson = json(verdict);
+        experiment.status = "DONE";
+        return experiments.save(experiment);
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> readCheckins(String checkinsJson) {
+        if (checkinsJson == null || checkinsJson.isBlank()) return new java.util.ArrayList<>();
+        try {
+            List<?> raw = objectMapper.readValue(checkinsJson, List.class);
+            List<Map<String, Object>> result = new java.util.ArrayList<>();
+            for (Object o : raw) {
+                if (o instanceof Map<?, ?> m) result.add((Map<String, Object>) m);
+            }
+            return result;
+        } catch (JsonProcessingException ex) {
+            return new java.util.ArrayList<>();
+        }
+    }
+
+    private List<Map<String, Object>> defaultDayPlan(String pathA, String pathB, int days) {
+        List<Map<String, Object>> plan = new java.util.ArrayList<>();
+        String[] activitiesA = {"Build a small prototype", "Analyze a real product's UX", "Talk to 2 potential users",
+                "Write a 1-page spec", "Ship a small improvement", "Review feedback", "Reflect and summarize"};
+        String[] activitiesB = {"Draft a PRD outline", "Run a competitor teardown", "Talk to 2 stakeholders",
+                "Write success metrics", "Present a mini roadmap", "Collect feedback", "Reflect and summarize"};
+        for (int day = 1; day <= days; day++) {
+            Map<String, Object> entry = new LinkedHashMap<>();
+            entry.put("day", day);
+            entry.put("pathA", Map.of("title", pathA, "description", activitiesA[(day - 1) % activitiesA.length]));
+            entry.put("pathB", Map.of("title", pathB, "description", activitiesB[(day - 1) % activitiesB.length]));
+            plan.add(entry);
+        }
+        return plan;
+    }
+
+    private Map<String, Object> computeFallbackVerdict(String pathA, String pathB, List<Map<String, Object>> checkins) {
+        double[] scoreA = averageScores(checkins, "A");
+        double[] scoreB = averageScores(checkins, "B");
+        // higher interest+enjoyment, lower difficulty = more aligned
+        double alignmentA = scoreA[0] + scoreA[2] - scoreA[1];
+        double alignmentB = scoreB[0] + scoreB[2] - scoreB[1];
+        String recommended = alignmentA >= alignmentB ? pathA : pathB;
+
+        Map<String, Object> verdict = new LinkedHashMap<>();
+        verdict.put("recommendedPath", recommended);
+        verdict.put("pathAScores", Map.of("interest", scoreA[0], "difficulty", scoreA[1], "enjoyment", scoreA[2]));
+        verdict.put("pathBScores", Map.of("interest", scoreB[0], "difficulty", scoreB[1], "enjoyment", scoreB[2]));
+        verdict.put("reasoning", recommended + " scored higher on interest and enjoyment relative to difficulty across the experiment week.");
+        return verdict;
+    }
+
+    private double[] averageScores(List<Map<String, Object>> checkins, String path) {
+        double interest = 0, difficulty = 0, enjoyment = 0;
+        int count = 0;
+        for (Map<String, Object> c : checkins) {
+            if (!path.equals(c.get("path"))) continue;
+            interest += number(c.get("interest"));
+            difficulty += number(c.get("difficulty"));
+            enjoyment += number(c.get("enjoyment"));
+            count++;
+        }
+        if (count == 0) return new double[]{0, 0, 0};
+        return new double[]{interest / count, difficulty / count, enjoyment / count};
     }
 
     @Transactional

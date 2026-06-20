@@ -117,6 +117,22 @@ public class WorkflowController {
         return workflow.updateExperiment(currentUser.get(), id, request);
     }
 
+    @PostMapping("/experiments/generate")
+    public LifeExperiment generateExperiment(@Valid @RequestBody GenerateExperimentRequest request) {
+        return workflow.generateLifeExperiment(currentUser.get(), request);
+    }
+
+    @PostMapping("/experiments/{id}/checkins")
+    public LifeExperiment recordCheckin(@PathVariable Long id,
+                                        @Valid @RequestBody ExperimentCheckinRequest request) {
+        return workflow.recordExperimentCheckin(currentUser.get(), id, request);
+    }
+
+    @PostMapping("/experiments/{id}/verdict")
+    public LifeExperiment experimentVerdict(@PathVariable Long id) {
+        return workflow.getExperimentVerdict(currentUser.get(), id);
+    }
+
     @PostMapping("/accountability")
     public MessageResponse accountability(@Valid @RequestBody AccountabilityRequest request) {
         return workflow.accountability(currentUser.get(), request);

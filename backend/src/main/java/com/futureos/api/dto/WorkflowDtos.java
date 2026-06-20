@@ -43,6 +43,19 @@ public class WorkflowDtos {
     public record ExperimentStatusRequest(
             @NotBlank @Pattern(regexp = "PLANNED|RUNNING|DONE|BLOCKED") String status
     ) {}
+    public record GenerateExperimentRequest(
+            @NotBlank String pathA,
+            @NotBlank String pathB,
+            @Min(1) @Max(30) Integer durationDays
+    ) {}
+    public record ExperimentCheckinRequest(
+            @NotNull @Min(1) @Max(7) Integer day,
+            @NotBlank @Pattern(regexp = "A|B") String path,
+            @NotNull @Min(1) @Max(5) Integer interest,
+            @NotNull @Min(1) @Max(5) Integer difficulty,
+            @NotNull @Min(1) @Max(5) Integer enjoyment,
+            String notes
+    ) {}
     public record AccountabilityRequest(@NotBlank String note) {}
     public record MessageResponse(String message) {}
 }

@@ -39,6 +39,28 @@ export type Task = {
   commitment: boolean;
 };
 
+export type ExperimentCheckin = {
+  day: number;
+  path: "A" | "B";
+  interest: number;
+  difficulty: number;
+  enjoyment: number;
+  notes?: string;
+};
+
+export type ExperimentDayPlanEntry = {
+  day: number;
+  pathA: { title: string; description: string };
+  pathB: { title: string; description: string };
+};
+
+export type ExperimentVerdict = {
+  recommendedPath: string;
+  pathAScores?: { interest: number; difficulty: number; enjoyment: number };
+  pathBScores?: { interest: number; difficulty: number; enjoyment: number };
+  reasoning?: string;
+};
+
 export type Experiment = {
   id: number;
   title: string;
@@ -47,6 +69,11 @@ export type Experiment = {
   successMetric: string;
   status: string;
   outcome?: string;
+  pathA?: string;
+  pathB?: string;
+  dayPlanJson?: string;
+  checkinsJson?: string;
+  verdictJson?: string;
 };
 
 export type Milestone = {
@@ -159,6 +186,18 @@ export const api = {
     request<Task>("/tasks", { method: "POST", body: JSON.stringify(payload) }),
   updateExperiment: (id: number, status: string) =>
     request<any>(`/experiments/${id}`, { method: "PATCH", body: JSON.stringify({ status }) }),
+  generateExperiment: (pathA: string, pathB: string, durationDays = 7) =>
+    request<Experiment>("/experiments/generate", {
+      method: "POST",
+      body: JSON.stringify({ pathA, pathB, durationDays }),
+    }),
+  recordExperimentCheckin: (id: number, checkin: ExperimentCheckin) =>
+    request<Experiment>(`/experiments/${id}/checkins`, {
+      method: "POST",
+      body: JSON.stringify(checkin),
+    }),
+  getExperimentVerdict: (id: number) =>
+    request<Experiment>(`/experiments/${id}/verdict`, { method: "POST" }),
   accountability: (note: string) =>
     request<any>("/accountability", { method: "POST", body: JSON.stringify({ note }) }),
 };
