@@ -50,12 +50,12 @@ export function GapPage() {
       </div>
 
       {!selected && (
-        <Card className="border-amber-400 bg-amber-50">
+        <Card className="border-amber-500/40 bg-amber-500/10">
           <div className="flex gap-3">
-            <AlertTriangle className="text-amber-600 shrink-0 mt-0.5" size={18} />
+            <AlertTriangle className="text-amber-400 shrink-0 mt-0.5" size={18} />
             <div>
-              <p className="text-sm font-semibold text-amber-800">No future selected</p>
-              <p className="mt-1 text-xs text-amber-700">Select a future branch first before running gap analysis.</p>
+              <p className="text-sm font-semibold text-amber-300">No future selected</p>
+              <p className="mt-1 text-xs text-amber-200/80">Select a future branch first before running gap analysis.</p>
               <Button size="sm" className="mt-3" onClick={() => navigate("/future-selection")}>Select a Future →</Button>
             </div>
           </div>
@@ -130,8 +130,8 @@ export function GapPage() {
 
 function GapCard({ icon, title, value, variant }: { icon?: React.ReactNode; title: string; value: string; variant?: "positive" }) {
   return (
-    <Card className={variant === "positive" ? "border-emerald-300 bg-emerald-50/50" : ""}>
-      <div className="flex items-center gap-2 font-semibold">
+    <Card className={variant === "positive" ? "border-emerald-500/30 bg-emerald-500/5" : ""}>
+      <div className="flex items-center gap-2 font-semibold text-foreground">
         {icon}
         {title}
       </div>

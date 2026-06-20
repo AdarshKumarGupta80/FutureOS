@@ -65,11 +65,11 @@ export function ContinuousImprovementPage() {
 
       {/* Improvement trend */}
       {trend !== null && (
-        <Card className={trend >= 0 ? "border-emerald-300 bg-emerald-50" : "border-red-300 bg-red-50"}>
+        <Card className={trend >= 0 ? "border-emerald-500/30 bg-emerald-500/10" : "border-red-500/30 bg-red-500/10"}>
           <div className="flex items-center gap-3">
-            <TrendingUp size={24} className={trend >= 0 ? "text-emerald-600" : "text-red-500"} />
+            <TrendingUp size={24} className={trend >= 0 ? "text-emerald-400" : "text-red-400"} />
             <div>
-              <div className="font-bold">{trend >= 0 ? `+${trend.toFixed(1)}%` : `${trend.toFixed(1)}%`} completion rate change</div>
+              <div className="font-bold text-foreground">{trend >= 0 ? `+${trend.toFixed(1)}%` : `${trend.toFixed(1)}%`} completion rate change</div>
               <div className="text-sm text-foreground/60">vs. previous accountability check-in</div>
             </div>
           </div>

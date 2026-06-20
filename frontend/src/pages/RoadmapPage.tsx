@@ -60,8 +60,8 @@ export function RoadmapPage() {
       {error && <ErrorState message={error} onRetry={generate} />}
 
       {!selected && !roadmap && (
-        <Card className="border-amber-400 bg-amber-50">
-          <p className="text-sm font-semibold text-amber-800">Select a future first</p>
+        <Card className="border-amber-500/40 bg-amber-500/10">
+          <p className="text-sm font-semibold text-amber-300">Select a future first</p>
           <Button size="sm" className="mt-3" onClick={() => navigate("/future-selection")}>Select Future →</Button>
         </Card>
       )}
@@ -187,7 +187,7 @@ function VisualTimeline({ milestones, tasks, startTitle, navigate }: { milestone
                   {/* Circle */}
                   <div className={`flex h-14 w-14 items-center justify-center rounded-full border-2 font-bold text-base transition shadow-sm
                     ${item.type === "start" ? "border-primary bg-primary text-white" :
-                      item.type === "outcome" ? "border-emerald-400 bg-emerald-100 text-emerald-700" :
+                      item.type === "outcome" ? "border-emerald-400 bg-emerald-500/15 text-emerald-300" :
                       isDone ? "border-emerald-400 bg-emerald-500 text-white" :
                       isNext ? "border-primary bg-primary/10 text-primary" :
                       "border-border bg-muted text-foreground/50"
@@ -229,7 +229,7 @@ function VisualTimeline({ milestones, tasks, startTitle, navigate }: { milestone
             return (
               <button
                 key={m.id}
-                className="text-left w-full rounded-lg border border-border bg-card p-4 shadow-sm transition hover:border-primary hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
+                className="text-left w-full rounded-lg border border-border bg-fo-surface p-4 shadow-sm transition hover:border-primary hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
                 onClick={() => navigate(`/progress?${params.toString()}`)}
                 title={`View actions for: ${m.title}`}
               >

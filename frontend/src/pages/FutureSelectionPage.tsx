@@ -49,7 +49,7 @@ export function FutureSelectionPage() {
 
       {/* Error banner */}
       {error && (
-        <div className="flex items-start gap-3 rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-700">
+        <div className="flex items-start gap-3 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
@@ -57,14 +57,14 @@ export function FutureSelectionPage() {
 
       {/* Success confirmation */}
       {selected && (
-        <Card className="border-emerald-400 bg-emerald-50">
+        <Card className="border-emerald-500/40 bg-emerald-500/10">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white">
               <Check size={20} />
             </div>
             <div>
-              <div className="font-bold text-emerald-800">Selected: {selected.title}</div>
-              <div className="text-xs text-emerald-600">
+              <div className="font-bold text-emerald-300">Selected: {selected.title}</div>
+              <div className="text-xs text-emerald-200/80">
                 Match {Math.round(selected.score)} · Confidence {Math.round(selected.confidenceScore ?? 0)}
               </div>
             </div>
@@ -93,7 +93,7 @@ export function FutureSelectionPage() {
                 key={f.id}
                 className={`relative transition-all ${
                   isSelected
-                    ? "border-emerald-400 ring-2 ring-emerald-200"
+                    ? "border-emerald-400 ring-2 ring-emerald-500/30"
                     : "hover:border-primary/50"
                 }`}
               >

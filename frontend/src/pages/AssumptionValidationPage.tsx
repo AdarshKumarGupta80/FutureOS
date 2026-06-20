@@ -108,7 +108,7 @@ export function AssumptionValidationPage() {
 
       {/* Error */}
       {error && (
-        <div className="flex items-center gap-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-700">
+        <div className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
           <AlertTriangle size={14} className="shrink-0" />
           {error}
         </div>
@@ -125,7 +125,7 @@ export function AssumptionValidationPage() {
         <p className="text-base font-semibold leading-snug">{card.question}</p>
 
         {card.confidenceImpact > 0 && (
-          <p className="mt-1.5 text-xs text-foreground/40">
+          <p className="mt-1.5 text-xs text-foreground/60">
             Confidence impact: {Math.round(card.confidenceImpact)} pts
           </p>
         )}
@@ -141,7 +141,7 @@ export function AssumptionValidationPage() {
               disabled:cursor-not-allowed disabled:opacity-50
               ${answers[card.id] === "YES"
                 ? "border-emerald-500 bg-emerald-500 text-white shadow-md"
-                : "border-border bg-background text-foreground hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-700"
+                : "border-border bg-background text-foreground hover:border-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300"
               }`}
           >
             <CheckCircle2 size={18} />
@@ -157,7 +157,7 @@ export function AssumptionValidationPage() {
               disabled:cursor-not-allowed disabled:opacity-50
               ${answers[card.id] === "NO"
                 ? "border-red-500 bg-red-500 text-white shadow-md"
-                : "border-border bg-background text-foreground hover:border-red-400 hover:bg-red-50 hover:text-red-600"
+                : "border-border bg-background text-foreground hover:border-red-400 hover:bg-red-500/10 hover:text-red-300"
               }`}
           >
             <XCircle size={18} />
@@ -167,7 +167,7 @@ export function AssumptionValidationPage() {
 
         {/* Saving indicator */}
         {saving && (
-          <p className="mt-2 text-center text-xs text-foreground/40">Saving…</p>
+          <p className="mt-2 text-center text-xs text-foreground/60">Saving…</p>
         )}
       </Card>
 
@@ -191,9 +191,9 @@ export function AssumptionValidationPage() {
 
       {/* Completion banner */}
       {allDone && (
-        <Card className="border-emerald-400 bg-emerald-50">
-          <p className="text-sm font-semibold text-emerald-700">All assumptions validated!</p>
-          <p className="mt-1 text-xs text-emerald-600">
+        <Card className="border-emerald-500/40 bg-emerald-500/10">
+          <p className="text-sm font-semibold text-emerald-300">All assumptions validated!</p>
+          <p className="mt-1 text-xs text-emerald-200/80">
             Your answers will improve the accuracy of future simulations.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">

@@ -129,15 +129,15 @@ export function LifeExperimentPage() {
 
 function StatCard({ icon, label, count, color }: { icon: React.ReactNode; label: string; count: number; color: string }) {
   const colors: Record<string, string> = {
-    amber: "border-amber-200 bg-amber-50",
-    blue: "border-blue-200 bg-blue-50",
-    emerald: "border-emerald-200 bg-emerald-50",
+    amber: "border-amber-500/30 bg-amber-500/10",
+    blue: "border-blue-500/30 bg-blue-500/10",
+    emerald: "border-emerald-500/30 bg-emerald-500/10",
   };
   return (
     <div className={`flex items-center gap-4 rounded-lg border p-4 ${colors[color] ?? ""}`}>
       {icon}
       <div>
-        <div className="text-2xl font-bold">{count}</div>
+        <div className="text-2xl font-bold text-foreground">{count}</div>
         <div className="text-xs text-foreground/60">{label}</div>
       </div>
     </div>
@@ -217,9 +217,9 @@ function ExperimentCard({
     <Card
       className={
         exp.status === "DONE"
-          ? "border-emerald-300 bg-emerald-50/50"
+          ? "border-emerald-500/30 bg-emerald-500/5"
           : exp.status === "RUNNING"
-          ? "border-blue-300 bg-blue-50/50"
+          ? "border-blue-500/30 bg-blue-500/5"
           : ""
       }
     >
@@ -409,11 +409,11 @@ function VerdictPanel({ verdictJson, pathA, pathB }: { verdictJson: string; path
   if (!verdict) return null;
 
   return (
-    <div className="mt-3 rounded border border-amber-300 bg-amber-50 p-3">
-      <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase text-amber-700">
+    <div className="mt-3 rounded border border-amber-500/30 bg-amber-500/10 p-3">
+      <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase text-amber-300">
         <Trophy size={14} /> Verdict
       </div>
-      <div className="text-sm font-semibold">{verdict.recommendedPath} feels more aligned</div>
+      <div className="text-sm font-semibold text-foreground">{verdict.recommendedPath} feels more aligned</div>
       {verdict.reasoning && <p className="mt-1 text-xs text-foreground/70">{verdict.reasoning}</p>}
       {verdict.pathAScores && verdict.pathBScores && (
         <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
@@ -433,8 +433,8 @@ function ScoreBlock({
   scores: { interest: number; difficulty: number; enjoyment: number };
 }) {
   return (
-    <div className="rounded bg-white/60 p-2">
-      <div className="font-semibold">{label}</div>
+    <div className="rounded bg-foreground/10 p-2 text-foreground/90">
+      <div className="font-semibold text-foreground">{label}</div>
       <div>Interest: {scores.interest.toFixed(1)}</div>
       <div>Difficulty: {scores.difficulty.toFixed(1)}</div>
       <div>Enjoyment: {scores.enjoyment.toFixed(1)}</div>

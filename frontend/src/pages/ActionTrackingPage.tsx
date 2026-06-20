@@ -186,7 +186,7 @@ export function ActionTrackingPage() {
                 key={task.id}
                 className={`flex items-start gap-3 rounded-lg border p-4 transition ${
                   completed
-                    ? "border-emerald-300 bg-emerald-50/50 opacity-80"
+                    ? "border-emerald-500/30 bg-emerald-500/5 opacity-80"
                     : "border-border"
                 }`}
               >
@@ -206,7 +206,7 @@ export function ActionTrackingPage() {
                 <div className="flex-1 min-w-0">
                   <div
                     className={`font-semibold ${
-                      completed ? "line-through text-foreground/50" : ""
+                      completed ? "line-through text-foreground/50" : "text-foreground"
                     }`}
                   >
                     {task.title}
@@ -223,7 +223,7 @@ export function ActionTrackingPage() {
 
           {/* Submit button — disabled unless ALL tasks are completed */}
           {submitError && (
-            <div className="rounded border border-red-300 bg-red-50 p-3 text-sm text-red-700">
+            <div className="rounded border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
               {submitError}
             </div>
           )}
@@ -265,7 +265,7 @@ export function ActionTrackingPage() {
                 <div key={log.id} className="rounded border border-border p-3 text-sm">
                   <div className="text-foreground/70">{log.note}</div>
                   {log.createdAt && (
-                    <div className="mt-1 text-xs text-foreground/40">
+                    <div className="mt-1 text-xs text-foreground/60">
                       {new Date(log.createdAt).toLocaleDateString()}
                     </div>
                   )}

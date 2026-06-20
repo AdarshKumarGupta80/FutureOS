@@ -70,15 +70,15 @@ function PrereqCard({ label, done, value, link }: { label: string; done: boolean
   const navigate = useNavigate();
   return (
     <div
-      className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition hover:border-primary/50 ${done ? "border-emerald-400 bg-emerald-50" : "border-border"}`}
+      className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition hover:border-primary/50 ${done ? "border-emerald-500/30 bg-emerald-500/10" : "border-border"}`}
       onClick={() => !done && navigate(link)}
     >
       <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${done ? "bg-emerald-500 text-white" : "bg-muted text-foreground/50"}`}>
         {done ? "✓" : "!"}
       </div>
       <div>
-        <div className="text-xs font-semibold">{label}</div>
-        {value ? <div className="text-xs text-foreground/60 truncate max-w-[140px]">{value}</div> : <div className="text-xs text-foreground/40">{done ? "Done" : "Pending →"}</div>}
+        <div className="text-xs font-semibold text-foreground">{label}</div>
+        {value ? <div className="text-xs text-foreground/60 truncate max-w-[140px]">{value}</div> : <div className="text-xs text-foreground/60">{done ? "Done" : "Pending →"}</div>}
       </div>
     </div>
   );

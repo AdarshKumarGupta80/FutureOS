@@ -51,12 +51,12 @@ export function AccountabilityPage() {
       </div>
 
       {inactive && (
-        <Card className="border-amber-400 bg-amber-50">
+        <Card className="border-amber-500/40 bg-amber-500/10">
           <div className="flex gap-3">
-            <AlertTriangle className="text-amber-600 shrink-0" size={18} />
+            <AlertTriangle className="text-amber-400 shrink-0" size={18} />
             <div>
-              <p className="text-sm font-semibold text-amber-800">Inactivity detected — {daysSinceLog} days since last log</p>
-              <p className="mt-1 text-xs text-amber-700">Submit an accountability check-in to get back on track.</p>
+              <p className="text-sm font-semibold text-amber-300">Inactivity detected — {daysSinceLog} days since last log</p>
+              <p className="mt-1 text-xs text-amber-200/80">Submit an accountability check-in to get back on track.</p>
             </div>
           </div>
         </Card>
@@ -157,13 +157,13 @@ export function AccountabilityPage() {
 
 function MiniStat({ label, value, color }: { label: string; value: number; color: string }) {
   const colors: Record<string, string> = {
-    emerald: "bg-emerald-50 border-emerald-200",
-    red: "bg-red-50 border-red-200",
-    blue: "bg-blue-50 border-blue-200",
+    emerald: "bg-emerald-500/10 border-emerald-500/30",
+    red: "bg-red-500/10 border-red-500/30",
+    blue: "bg-blue-500/10 border-blue-500/30",
   };
   return (
     <div className={`rounded-lg border p-3 ${colors[color] ?? ""}`}>
-      <div className="text-2xl font-bold">{value}</div>
+      <div className="text-2xl font-bold text-foreground">{value}</div>
       <div className="text-xs text-foreground/60">{label}</div>
     </div>
   );
