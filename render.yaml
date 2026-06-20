@@ -46,6 +46,10 @@ services:
         fromDatabase:
           name: futureos-postgres
           property: password
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: futureos-postgres
+          property: connectionString
       - key: JWT_SECRET
         sync: false
       - key: AI_BASE_URL
