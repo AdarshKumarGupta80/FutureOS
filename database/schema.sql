@@ -1,8 +1,10 @@
-CREATE DATABASE IF NOT EXISTS futureos;
-USE futureos;
+-- PostgreSQL schema (converted from MySQL)
+-- AUTO_INCREMENT → BIGSERIAL
+-- LONGTEXT → TEXT
+-- Drop CREATE DATABASE / USE (Render creates the DB automatically)
 
 CREATE TABLE IF NOT EXISTS users (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGSERIAL PRIMARY KEY,
   email VARCHAR(190) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
   full_name VARCHAR(120) NOT NULL,
@@ -11,7 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS profiles (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL UNIQUE,
   background TEXT,
   resume_url VARCHAR(500),
@@ -22,7 +24,7 @@ CREATE TABLE IF NOT EXISTS profiles (
 );
 
 CREATE TABLE IF NOT EXISTS goals (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL,
   goal TEXT NOT NULL,
   biggest_confusion TEXT NOT NULL,
@@ -33,19 +35,19 @@ CREATE TABLE IF NOT EXISTS goals (
 );
 
 CREATE TABLE IF NOT EXISTS clarifications (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL,
   question TEXT NOT NULL,
   assumption TEXT,
   answer TEXT,
-  confidence_impact DOUBLE DEFAULT 0,
+  confidence_impact DOUBLE PRECISION DEFAULT 0,
   status VARCHAR(40) NOT NULL DEFAULT 'OPEN',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS future_branches (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL,
   title VARCHAR(160) NOT NULL,
   why_it_fits TEXT,
@@ -55,8 +57,8 @@ CREATE TABLE IF NOT EXISTS future_branches (
   opportunities TEXT,
   skills_required TEXT,
   timeline TEXT,
-  score DOUBLE DEFAULT 0,
-  confidence_score DOUBLE DEFAULT 0,
+  score DOUBLE PRECISION DEFAULT 0,
+  confidence_score DOUBLE PRECISION DEFAULT 0,
   assumptions_used TEXT,
   one_year_outlook TEXT,
   three_year_outlook TEXT,
@@ -66,7 +68,7 @@ CREATE TABLE IF NOT EXISTS future_branches (
 );
 
 CREATE TABLE IF NOT EXISTS preferences (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL UNIQUE,
   financial_security INT NOT NULL DEFAULT 5,
   career_growth INT NOT NULL DEFAULT 5,
@@ -76,7 +78,7 @@ CREATE TABLE IF NOT EXISTS preferences (
 );
 
 CREATE TABLE IF NOT EXISTS selected_futures (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL UNIQUE,
   future_branch_id BIGINT NOT NULL,
   selected_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -85,7 +87,7 @@ CREATE TABLE IF NOT EXISTS selected_futures (
 );
 
 CREATE TABLE IF NOT EXISTS gap_reports (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL,
   current_state TEXT,
   selected_future TEXT,
@@ -95,13 +97,13 @@ CREATE TABLE IF NOT EXISTS gap_reports (
   missing_experience TEXT,
   missing_certifications TEXT,
   evidence_reasoning TEXT,
-  confidence_score DOUBLE DEFAULT 0,
+  confidence_score DOUBLE PRECISION DEFAULT 0,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS roadmaps (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL,
   title VARCHAR(190) NOT NULL,
   weekly_plan TEXT,
@@ -115,35 +117,35 @@ CREATE TABLE IF NOT EXISTS roadmaps (
 );
 
 CREATE TABLE IF NOT EXISTS decision_graphs (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL,
   roadmap_id BIGINT,
   title VARCHAR(190) NOT NULL,
-  nodes_json LONGTEXT NOT NULL,
-  edges_json LONGTEXT NOT NULL,
+  nodes_json TEXT NOT NULL,
+  edges_json TEXT NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (roadmap_id) REFERENCES roadmaps(id)
 );
 
 CREATE TABLE IF NOT EXISTS roadmap_versions (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL,
   roadmap_id BIGINT NOT NULL,
   version INT,
   reason TEXT,
-  snapshot_json LONGTEXT,
+  snapshot_json TEXT,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (roadmap_id) REFERENCES roadmaps(id)
 );
 
 CREATE TABLE IF NOT EXISTS accountability_insights (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL,
-  completion_rate DOUBLE DEFAULT 0,
+  completion_rate DOUBLE PRECISION DEFAULT 0,
   missed_commitments INT DEFAULT 0,
-  consistency_score DOUBLE DEFAULT 0,
+  consistency_score DOUBLE PRECISION DEFAULT 0,
   common_blockers TEXT,
   weekly_insight TEXT,
   accountability_summary TEXT,
@@ -154,7 +156,7 @@ CREATE TABLE IF NOT EXISTS accountability_insights (
 );
 
 CREATE TABLE IF NOT EXISTS milestones (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGSERIAL PRIMARY KEY,
   roadmap_id BIGINT NOT NULL,
   title VARCHAR(190) NOT NULL,
   target_date DATE,
@@ -163,7 +165,7 @@ CREATE TABLE IF NOT EXISTS milestones (
 );
 
 CREATE TABLE IF NOT EXISTS tasks (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGSERIAL PRIMARY KEY,
   milestone_id BIGINT,
   user_id BIGINT NOT NULL,
   title VARCHAR(190) NOT NULL,
@@ -176,7 +178,7 @@ CREATE TABLE IF NOT EXISTS tasks (
 );
 
 CREATE TABLE IF NOT EXISTS life_experiments (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL,
   title VARCHAR(190) NOT NULL,
   hypothesis TEXT,
@@ -187,7 +189,7 @@ CREATE TABLE IF NOT EXISTS life_experiments (
 );
 
 CREATE TABLE IF NOT EXISTS progress_logs (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL,
   task_id BIGINT,
   note TEXT NOT NULL,
@@ -197,7 +199,7 @@ CREATE TABLE IF NOT EXISTS progress_logs (
 );
 
 CREATE TABLE IF NOT EXISTS notifications (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL,
   message TEXT NOT NULL,
   read_flag BOOLEAN NOT NULL DEFAULT FALSE,

@@ -1,5 +1,5 @@
- databases:
-  - name: futureos-mysql
+databases:
+  - name: futureos-postgres
     databaseName: futureos
     user: futureos
     plan: free
@@ -30,21 +30,17 @@ services:
     plan: free
     region: oregon
     envVars:
-      - key: DB_HOST
+      - key: SPRING_DATASOURCE_URL
         fromDatabase:
-          name: futureos-mysql
-          property: host
-      - key: DB_PORT
-        fromDatabase:
-          name: futureos-mysql
-          property: port
+          name: futureos-postgres
+          property: connectionString
       - key: DB_USERNAME
         fromDatabase:
-          name: futureos-mysql
+          name: futureos-postgres
           property: user
       - key: DB_PASSWORD
         fromDatabase:
-          name: futureos-mysql
+          name: futureos-postgres
           property: password
       - key: JWT_SECRET
         sync: false
