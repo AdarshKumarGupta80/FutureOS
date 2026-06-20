@@ -1,0 +1,74 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: futureos-mysql
+    environment:
+      MYSQL_DATABASE: futureos
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-futureos_root}
+      MYSQL_USER: ${MYSQL_USER:-futureos}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-futureos}
+    ports:
+      - "3306:3306"
+    volumes:
+      - futureos_mysql:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      # Use the root password directly; the previous form embedded the variable
+      # inside the command list where shell substitution does not occur.
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost",
+             "-uroot", "--password=${MYSQL_ROOT_PASSWORD:-futureos_root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  ai-service:
+    build:
+      context: ./ai-service
+    container_name: futureos-ai
+    environment:
+      # Groq (preferred) — set GROQ_API_KEY in .env
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      # OpenAI fallback — set OPENAI_API_KEY in .env if not using Groq
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      # Model name — llama-3.3-70b-versatile for Groq, gpt-4.1-mini for OpenAI
+      AI_MODEL: ${AI_MODEL:-llama-3.3-70b-versatile}
+    ports:
+      - "8001:8001"
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8001/health').read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    container_name: futureos-backend
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/futureos?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      DB_USERNAME: ${MYSQL_USER:-futureos}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-futureos}
+      JWT_SECRET: ${JWT_SECRET:-futureos-local-development-secret-change-me-please-123456}
+      AI_BASE_URL: http://ai-service:8001
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      ai-service:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE: ${VITE_API_BASE:-http://localhost:8080/api}
+    container_name: futureos-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  futureos_mysql:
