@@ -85,6 +85,12 @@ public class WorkflowController {
         return workflow.generateRoadmap(currentUser.get());
     }
 
+
+    @PostMapping("/roadmap/advance")
+    public Map<String, Object> advanceMilestone(@Valid @RequestBody AdvanceMilestoneRequest request) {
+        return workflow.advanceMilestone(currentUser.get(), request.milestoneId());
+    }
+
     @GetMapping("/decision-graphs")
     public java.util.List<DecisionGraph> decisionGraphs() {
         return workflow.decisionGraphs(currentUser.get());

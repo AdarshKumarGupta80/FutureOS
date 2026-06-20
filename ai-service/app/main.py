@@ -274,9 +274,13 @@ def roadmap(request: RoadmapRequest) -> dict[str, Any]:
         '"graph":{"nodes":[{"id":"...","label":"...","type":"future|skill|proof|milestone|outcome"}],'
         '"edges":[{"from":"...","to":"..."}]},'
         '"weeklyPlan":"...","monthlyPlan":"...","expectedOutcomes":"...",'
-        '"milestones":["..."],"tasks":["..."],'
+        '"milestones":[{"title":"...","tasks":["task 1 specific to this milestone","task 2 specific to this milestone","task 3 specific to this milestone"]}],'
         '"experiments":[{"title":"...","hypothesis":"...","durationDays":number,"successMetric":"..."}]'
-        "}. The dependency graph must be acyclic and must show prerequisites from foundation to outcome."
+        "}. "
+        "CRITICAL: Each milestone object MUST contain a 'tasks' array with 3-5 concrete, actionable tasks "
+        "that are EXCLUSIVELY relevant to completing THAT milestone. "
+        "Tasks must be specific to the milestone title — do NOT reuse tasks across milestones. "
+        "The dependency graph must be acyclic and must show prerequisites from foundation to outcome."
     )
     return openai_json(system, request.model_dump())
 

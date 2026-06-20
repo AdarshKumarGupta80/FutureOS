@@ -200,4 +200,9 @@ export const api = {
     request<Experiment>(`/experiments/${id}/verdict`, { method: "POST" }),
   accountability: (note: string) =>
     request<any>("/accountability", { method: "POST", body: JSON.stringify({ note }) }),
+  advanceMilestone: (milestoneId: number) =>
+    request<any>("/roadmap/advance", {
+      method: "POST",
+      body: JSON.stringify({ milestoneId }),
+    }),
 };

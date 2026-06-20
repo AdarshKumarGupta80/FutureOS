@@ -58,4 +58,5 @@ public class WorkflowDtos {
     ) {}
     public record AccountabilityRequest(@NotBlank String note) {}
     public record MessageResponse(String message) {}
+    public record AdvanceMilestoneRequest(@NotNull Long milestoneId) {}
 }

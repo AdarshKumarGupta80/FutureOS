@@ -7,25 +7,6 @@ import { Textarea } from "../components/ui/Input";
 import { LoadingState, ProgressBar } from "../components/ui/State";
 import { api } from "../lib/api";
 
-// ---------- mock tasks per milestone (fallback when backend has no milestone filter) ----------
-const MOCK_TASKS_BY_MILESTONE: Record<string, MilestoneTask[]> = {
-  default: [
-    { id: 1, title: "Define your primary goal", description: "Write a clear, measurable goal statement" },
-    { id: 2, title: "Identify key blockers", description: "List the top 3 things stopping you right now" },
-    { id: 3, title: "Schedule a weekly review", description: "Block 30 min each week to assess progress" },
-  ],
-};
-
-function getMockTasksForMilestone(milestoneId: string): MilestoneTask[] {
-  return (
-    MOCK_TASKS_BY_MILESTONE[milestoneId] ??
-    MOCK_TASKS_BY_MILESTONE["default"].map((t) => ({
-      ...t,
-      title: `[M${milestoneId}] ${t.title}`,
-    }))
-  );
-}
-
 // ---------- types ----------
 interface MilestoneTask {
   id: number;
@@ -55,21 +36,41 @@ export function ActionTrackingPage() {
 
   // ---------- load dashboard data ----------
   function loadDashboard() {
-    api.dashboard().then(setData).catch(() => setData({}));
+    api.dashboard().then((d) => {
+      setData(d);
+
+      const allTasks: any[] = d.tasks ?? [];
+      const mid = milestoneId ? Number(milestoneId) : null;
+
+      // STRICT ISOLATION: only show tasks for the exact milestone.
+      // If no milestoneId is in the URL, show nothing — never mix tasks across milestones.
+      const filtered: any[] = mid != null
+        ? allTasks.filter((t: any) => t.milestoneId === mid)
+        : [];
+
+      const realTasks: MilestoneTask[] = filtered.map((t: any) => ({
+        id: t.id,
+        title: t.title,
+        description: t.description,
+        status: t.status,
+      }));
+
+      setTaskStates((prev) => {
+        const existingById = new Map(prev.map((ts) => [ts.task.id, ts.completed]));
+        return realTasks.map((task: any) => ({
+          task,
+          completed: existingById.has(task.id)
+            ? existingById.get(task.id)!
+            : task.status === "DONE",
+        }));
+      });
+      setTasksLoaded(true);
+    }).catch(() => {
+      setData({});
+      setTasksLoaded(true);
+    });
   }
-  useEffect(loadDashboard, []);
-
-  // ---------- load tasks for this milestone ----------
-  useEffect(() => {
-    const id = milestoneId ?? "default";
-
-    // Try to derive tasks from dashboard data first; fall back to mock.
-    // Because the backend @JsonIgnore-s the milestone relation on TaskItem,
-    // we can't filter by milestoneId from the API — use mock data.
-    const mock = getMockTasksForMilestone(id);
-    setTaskStates(mock.map((t) => ({ task: t, completed: false })));
-    setTasksLoaded(true);
-  }, [milestoneId]);
+  useEffect(loadDashboard, [milestoneId]);
 
   // ---------- task toggle ----------
   function toggleTask(id: number) {
@@ -92,6 +93,26 @@ export function ActionTrackingPage() {
   const pct = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
   const allDone = totalTasks > 0 && completedTasks === totalTasks;
 
+  // ---------- submit milestone completion ----------
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
+  async function handleSubmit() {
+    if (!allDone) return;
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      if (milestoneId) {
+        await api.advanceMilestone(Number(milestoneId));
+      }
+      navigate("/roadmap");
+    } catch (e: any) {
+      setSubmitError(e.message ?? "Failed to save progress");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   // ---------- streak / logs from dashboard ----------
   const streak = data ? calcStreak(data.progressLogs ?? []) : 0;
   const thisWeekLogs = data
@@ -102,15 +123,15 @@ export function ActionTrackingPage() {
       }).length
     : 0;
 
-  if (!tasksLoaded) return <LoadingState label="Loading action tracking…" />;
-
   return (
     <div className="space-y-6">
       <div>
         <div className="text-xs font-semibold uppercase tracking-wider text-primary">Step 11 · Action Tracking</div>
-        <h1 className="mt-1 text-2xl font-bold">Action Tracking</h1>
-        {milestoneId && (
-          <p className="mt-0.5 text-xs text-foreground/50">Milestone #{milestoneId}</p>
+        <h1 className="mt-1 text-2xl font-bold">
+          {milestoneTitle ?? "Action Tracking"}
+        </h1>
+        {milestoneTitle && (
+          <p className="mt-0.5 text-xs font-medium text-primary/70">Milestone #{milestoneId}</p>
         )}
         <p className="mt-1 text-sm text-foreground/60">
           Complete all tasks for this milestone, then submit progress.
@@ -156,7 +177,7 @@ export function ActionTrackingPage() {
           <div className="space-y-2">
             {taskStates.length === 0 && (
               <div className="rounded border border-border p-4 text-sm text-foreground/60">
-                No tasks found for this milestone.
+                No tasks found for this milestone. Try regenerating your roadmap to create linked tasks.
               </div>
             )}
 
@@ -201,19 +222,19 @@ export function ActionTrackingPage() {
           </div>
 
           {/* Submit button — disabled unless ALL tasks are completed */}
+          {submitError && (
+            <div className="rounded border border-red-300 bg-red-50 p-3 text-sm text-red-700">
+              {submitError}
+            </div>
+          )}
           <Button
             className="w-full mt-2"
-            disabled={!allDone}
-            onClick={() => {
-              // Phase 3A: mark current milestone DONE, advance to next
-              navigate("/roadmap", {
-                state: {
-                  completedMilestoneId: milestoneId ? Number(milestoneId) : null,
-                },
-              });
-            }}
+            disabled={!allDone || submitting}
+            onClick={handleSubmit}
           >
-            {allDone
+            {submitting
+              ? "Saving…"
+              : allDone
               ? "Submit Progress ✓"
               : `Complete all tasks to submit (${completedTasks}/${totalTasks})`}
           </Button>

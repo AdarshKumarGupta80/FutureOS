@@ -35,8 +35,8 @@ export function AuthPage() {
             <BrainCircuit />
           </div>
           <div>
-            <div className="font-bold">FutureOS</div>
-            <div className="text-sm text-foreground/60">Design Your Future Before You Live It</div>
+            <div className="font-bold text-2xl">FutureOS</div>
+            <div className="text-2xl text-foreground/60">Design Your Future Before You Live It</div>
           </div>
         </div>
         <div className="max-w-2xl py-12">
