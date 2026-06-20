@@ -173,35 +173,39 @@ function VisualTimeline({ milestones, tasks, startTitle, navigate }: { milestone
         <div className="h-full bg-gradient-to-r from-primary to-emerald-400 transition-all" style={{ width: `${pct}%` }} />
       </div>
 
-      <div className="flex gap-3 overflow-x-auto pb-2">
+      {/* Scrollable timeline nodes */}
+      <div className="flex items-start gap-0 overflow-x-auto pb-3">
         {items.map((item, idx) => {
           const isDone = item.status === "DONE" || item.type === "start";
           const isNext = !isDone && items.slice(0, idx).every((p) => p.status === "DONE" || p.type === "start");
           const mTasks = tasks.filter((t) => (item as any).id && t.roadmapMilestoneId === (item as any).id);
 
           return (
-            <div key={item.id ?? idx} className="flex shrink-0 flex-col items-center gap-2" style={{ minWidth: 140 }}>
-              {/* Connector line */}
-              {idx > 0 && (
-                <div className={`mt-6 h-px w-8 shrink-0 ${isDone ? "bg-primary" : "bg-border"}`} style={{ position: "absolute", left: -20 }} />
+            <div key={item.id ?? idx} className="flex shrink-0 items-center">
+              {/* Node column */}
+              <div className="flex shrink-0 flex-col items-center gap-2" style={{ minWidth: 120 }}>
+                <div className={`flex h-12 w-12 items-center justify-center rounded-full border-2 font-bold text-sm transition
+                  ${item.type === "start" ? "border-primary bg-primary text-white" :
+                    item.type === "outcome" ? "border-emerald-400 bg-emerald-100 text-emerald-700" :
+                    isDone ? "border-emerald-400 bg-emerald-500 text-white" :
+                    isNext ? "border-primary bg-primary/10 text-primary" :
+                    "border-border bg-muted text-foreground/50"
+                  }`}
+                >
+                  {item.type === "start" ? "S" : item.type === "outcome" ? "🎯" : isDone ? "✓" : idx}
+                </div>
+
+                <div className="text-center px-1">
+                  <div className="text-xs font-semibold leading-tight">{item.title}</div>
+                  {item.targetDate && <div className="mt-0.5 text-[10px] text-foreground/50">{item.targetDate}</div>}
+                  {isNext && <div className="mt-1 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">Next</div>}
+                </div>
+              </div>
+
+              {/* Connector line between nodes */}
+              {idx < items.length - 1 && (
+                <div className={`h-px w-8 shrink-0 ${isDone ? "bg-primary" : "bg-border"}`} />
               )}
-
-              <div className={`flex h-12 w-12 items-center justify-center rounded-full border-2 font-bold text-sm transition
-                ${item.type === "start" ? "border-primary bg-primary text-white" :
-                  item.type === "outcome" ? "border-emerald-400 bg-emerald-100 text-emerald-700" :
-                  isDone ? "border-emerald-400 bg-emerald-500 text-white" :
-                  isNext ? "border-primary bg-primary/10 text-primary" :
-                  "border-border bg-muted text-foreground/50"
-                }`}
-              >
-                {item.type === "start" ? "S" : item.type === "outcome" ? "🎯" : isDone ? "✓" : idx}
-              </div>
-
-              <div className="text-center">
-                <div className="text-xs font-semibold">{item.title}</div>
-                {item.targetDate && <div className="text-[10px] text-foreground/50">{item.targetDate}</div>}
-                {isNext && <div className="mt-1 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">Next</div>}
-              </div>
             </div>
           );
         })}

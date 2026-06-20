@@ -389,15 +389,38 @@ public class WorkflowService {
 
     private List<Map<String, Object>> defaultDayPlan(String pathA, String pathB, int days) {
         List<Map<String, Object>> plan = new java.util.ArrayList<>();
-        String[] activitiesA = {"Build a small prototype", "Analyze a real product's UX", "Talk to 2 potential users",
-                "Write a 1-page spec", "Ship a small improvement", "Review feedback", "Reflect and summarize"};
-        String[] activitiesB = {"Draft a PRD outline", "Run a competitor teardown", "Talk to 2 stakeholders",
-                "Write success metrics", "Present a mini roadmap", "Collect feedback", "Reflect and summarize"};
+        // Dynamic fallback: generate path-aware tasks based on day phase
+        // Phase 1 (days 1-2): Explore & research
+        // Phase 2 (days 3-5): Hands-on & build
+        // Phase 3 (days 6+): Reflect & evaluate
         for (int day = 1; day <= days; day++) {
+            String taskA, taskB;
+            if (day == 1) {
+                taskA = "Research what a typical day as " + pathA + " looks like";
+                taskB = "Research what a typical day as " + pathB + " looks like";
+            } else if (day == 2) {
+                taskA = "Find and read a success story from someone in " + pathA;
+                taskB = "Find and read a success story from someone in " + pathB;
+            } else if (day == 3) {
+                taskA = "Complete a beginner task or mini project related to " + pathA;
+                taskB = "Complete a beginner task or mini project related to " + pathB;
+            } else if (day == 4) {
+                taskA = "Reach out to or watch an interview of a " + pathA + " professional";
+                taskB = "Reach out to or watch an interview of a " + pathB + " professional";
+            } else if (day == 5) {
+                taskA = "Identify one core skill gap you'd need to close for " + pathA;
+                taskB = "Identify one core skill gap you'd need to close for " + pathB;
+            } else if (day == 6) {
+                taskA = "List 3 things you enjoyed and 3 things you disliked about " + pathA + " so far";
+                taskB = "List 3 things you enjoyed and 3 things you disliked about " + pathB + " so far";
+            } else {
+                taskA = "Write a reflection: does " + pathA + " feel right for you and why?";
+                taskB = "Write a reflection: does " + pathB + " feel right for you and why?";
+            }
             Map<String, Object> entry = new LinkedHashMap<>();
             entry.put("day", day);
-            entry.put("pathA", Map.of("title", pathA, "description", activitiesA[(day - 1) % activitiesA.length]));
-            entry.put("pathB", Map.of("title", pathB, "description", activitiesB[(day - 1) % activitiesB.length]));
+            entry.put("pathA", Map.of("title", pathA, "description", taskA));
+            entry.put("pathB", Map.of("title", pathB, "description", taskB));
             plan.add(entry);
         }
         return plan;

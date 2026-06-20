@@ -297,3 +297,78 @@ def accountability(request: AccountabilityRequest) -> dict[str, Any]:
         "}. Keep it direct, practical, and suitable for dashboard cards."
     )
     return openai_json(system, request.model_dump())
+
+
+# ---------------------------------------------------------------------------
+# Life Experiment endpoints
+# ---------------------------------------------------------------------------
+
+class LifeExperimentRequest(BaseModel):
+    pathA: str
+    pathB: str
+    durationDays: int = 7
+
+
+class LifeExperimentVerdictRequest(BaseModel):
+    pathA: str
+    pathB: str
+    hypothesis: str | None = None
+    checkins: list[dict[str, Any]] = []
+
+
+@app.post("/ai/life-experiment")
+def life_experiment_plan(request: LifeExperimentRequest) -> dict[str, Any]:
+    days = request.durationDays
+    system = (
+        "You are the FutureOS Life Experiment Planner. "
+        "Given two career/life paths (pathA and pathB) and a duration in days, "
+        "generate a concrete, personalised day-by-day experiment plan. "
+        "Each day must have ONE specific, actionable task for EACH path — "
+        "the tasks must be TAILORED to the actual path names provided, "
+        "NOT generic placeholders. "
+        "Tasks should progressively build insight: early days are exploratory "
+        "(research, observe, try), mid days are hands-on (build, talk, create), "
+        "late days are reflective (analyse, compare, decide). "
+        "Return valid JSON only with this EXACT shape — no extra keys, no markdown: "
+        "{"
+        '"hypothesis":"one sentence about what this experiment will reveal",'
+        '"successMetric":"one measurable sentence defining success",'
+        '"dayPlan":['
+        '{"day":1,"pathA":{"title":"pathA name","description":"specific task for day 1 for pathA"},'
+        '"pathB":{"title":"pathB name","description":"specific task for day 1 for pathB"}},'
+        "... one object per day up to durationDays"
+        "]"
+        "}. "
+        f"Generate exactly {days} entries in dayPlan, numbered 1 through {days}. "
+        "Every description must be a concrete action sentence of 6-12 words, "
+        "directly relevant to the path name — never reuse the same description across days."
+    )
+    return openai_json(system, {
+        "pathA": request.pathA,
+        "pathB": request.pathB,
+        "durationDays": days,
+    })
+
+
+@app.post("/ai/life-experiment/verdict")
+def life_experiment_verdict(request: LifeExperimentVerdictRequest) -> dict[str, Any]:
+    system = (
+        "You are the FutureOS Life Experiment Verdict Engine. "
+        "Analyse the check-in data from a completed experiment and decide which path "
+        "feels more aligned based on interest, enjoyment, and difficulty scores. "
+        "Return valid JSON only with this EXACT shape — no extra keys, no markdown: "
+        "{"
+        '"recommendedPath":"the path name that is more aligned",'
+        '"reasoning":"2-3 sentence explanation based on the scores",'
+        '"pathAScores":{"interest":number,"difficulty":number,"enjoyment":number},'
+        '"pathBScores":{"interest":number,"difficulty":number,"enjoyment":number}'
+        "}. "
+        "Scores should be averages across all check-ins for each path (1-5 scale). "
+        "If no check-ins exist, base reasoning on the hypothesis and path names."
+    )
+    return openai_json(system, {
+        "pathA": request.pathA,
+        "pathB": request.pathB,
+        "hypothesis": request.hypothesis or "",
+        "checkins": request.checkins,
+    })

@@ -299,26 +299,24 @@ function DayPlan({ exp }: { exp: Experiment }) {
   if (!plan.length) return null;
 
   return (
-    <details className="mt-3 rounded border border-border">
-      <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-foreground/70">
-        View {plan.length}-day plan
-      </summary>
-      <div className="divide-y divide-border px-3 pb-2">
+    <div className="mt-3 rounded border border-border overflow-hidden">
+      {/* Header row */}
+      <div className="grid grid-cols-[2.5rem_1fr_1fr] gap-2 bg-muted/60 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-foreground/50">
+        <div>Day</div>
+        <div>{exp.pathA}</div>
+        <div>{exp.pathB}</div>
+      </div>
+      {/* Day rows */}
+      <div className="divide-y divide-border">
         {plan.map((d) => (
-          <div key={d.day} className="grid grid-cols-[2rem_1fr_1fr] gap-2 py-2 text-xs">
-            <div className="font-bold text-foreground/50">D{d.day}</div>
-            <div>
-              <div className="font-semibold text-foreground/80">{exp.pathA}</div>
-              <div className="text-foreground/60">{d.pathA?.description}</div>
-            </div>
-            <div>
-              <div className="font-semibold text-foreground/80">{exp.pathB}</div>
-              <div className="text-foreground/60">{d.pathB?.description}</div>
-            </div>
+          <div key={d.day} className="grid grid-cols-[2.5rem_1fr_1fr] gap-2 px-3 py-2.5 text-xs">
+            <div className="flex items-center font-bold text-primary">D{d.day}</div>
+            <div className="text-foreground/70">{d.pathA?.description}</div>
+            <div className="text-foreground/70">{d.pathB?.description}</div>
           </div>
         ))}
       </div>
-    </details>
+    </div>
   );
 }
 
