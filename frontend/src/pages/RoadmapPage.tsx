@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Map, Zap, BookOpen, Layers, Trophy, Clock } from "lucide-react";
 import { Button } from "../components/ui/Button";
@@ -12,6 +12,20 @@ export function RoadmapPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Phase 3A: local milestone progression state (no DB write yet)
+  const [localMilestoneOverrides, setLocalMilestoneOverrides] = useState<Record<number, string>>({});
+
+  // On mount, check if we arrived here after a submit — apply progression
+  useEffect(() => {
+    const completedId: number | null = (location.state as any)?.completedMilestoneId ?? null;
+    if (completedId != null) {
+      setLocalMilestoneOverrides((prev) => ({ ...prev, [completedId]: "DONE" }));
+      // Clear navigation state so refresh doesn't re-apply
+      window.history.replaceState({}, "");
+    }
+  }, [location.state]);
 
   function load() { api.dashboard().then(setData).catch((e) => setError(e.message)); }
   useEffect(load, []);
@@ -32,8 +46,31 @@ export function RoadmapPage() {
   if (!data) return <LoadingState label="Loading roadmap…" />;
 
   const roadmap = data.roadmaps?.[0];
-  const milestones: any[] = data.milestones ?? [];
   const tasks: any[] = data.tasks ?? [];
+
+  // Phase 3A: merge local overrides into milestone list, then advance next
+  const milestones: any[] = (() => {
+    const raw: any[] = data.milestones ?? [];
+    if (!Object.keys(localMilestoneOverrides).length) return raw;
+
+    // Apply DONE overrides
+    const patched = raw.map((m) =>
+      localMilestoneOverrides[m.id] ? { ...m, status: localMilestoneOverrides[m.id] } : m
+    );
+
+    // Find first non-DONE milestone after the last locally-completed one and mark it RUNNING
+    const lastCompletedIdx = patched.reduce(
+      (acc, m, idx) => (localMilestoneOverrides[m.id] === "DONE" ? idx : acc),
+      -1
+    );
+    if (lastCompletedIdx !== -1 && lastCompletedIdx + 1 < patched.length) {
+      const next = patched[lastCompletedIdx + 1];
+      if (next.status !== "DONE") {
+        patched[lastCompletedIdx + 1] = { ...next, status: "RUNNING" };
+      }
+    }
+    return patched;
+  })();
   const versions: any[] = data.roadmapVersions ?? [];
   const done = tasks.filter((t) => t.status === "DONE").length;
   const progress = tasks.length ? Math.round((done / tasks.length) * 100) : 0;

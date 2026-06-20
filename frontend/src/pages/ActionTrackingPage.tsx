@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { CheckSquare, Flame, TrendingUp } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
@@ -41,7 +41,9 @@ interface TaskState {
 // ---------- component ----------
 export function ActionTrackingPage() {
   const [searchParams] = useSearchParams();
-const milestoneId = searchParams.get("milestoneId");
+  const milestoneId = searchParams.get("milestoneId");
+  const milestoneTitle = searchParams.get("milestoneTitle") ?? undefined;
+  const navigate = useNavigate();
 
   // task tracking state
   const [taskStates, setTaskStates] = useState<TaskState[]>([]);
@@ -203,8 +205,12 @@ const milestoneId = searchParams.get("milestoneId");
             className="w-full mt-2"
             disabled={!allDone}
             onClick={() => {
-              // Phase 2 will wire this to milestone progression
-              alert("All tasks complete! Milestone progression coming in the next phase.");
+              // Phase 3A: mark current milestone DONE, advance to next
+              navigate("/roadmap", {
+                state: {
+                  completedMilestoneId: milestoneId ? Number(milestoneId) : null,
+                },
+              });
             }}
           >
             {allDone
