@@ -55,9 +55,6 @@ services:
     dockerContext: ./frontend
     plan: free
     region: oregon
-    buildArgs:
-      - key: VITE_API_BASE
-        value: https://futureos-backend.onrender.com/api
     envVars:
       - key: VITE_API_BASE
         value: https://futureos-backend.onrender.com/api

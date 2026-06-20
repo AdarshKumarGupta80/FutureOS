@@ -5,13 +5,13 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-ARG VITE_API_BASE=http://localhost:8080/api
+# Placeholder value — will be replaced at runtime by entrypoint.sh
+ARG VITE_API_BASE=__VITE_API_BASE_PLACEHOLDER__
 ENV VITE_API_BASE=${VITE_API_BASE}
 
 COPY . .
 RUN npm run build
 
-# Add SPA fallback so React Router works on page refresh
 RUN echo '/* /index.html 200' > /app/dist/_redirects
 
 # ── Stage 2: serve ──────────────────────────────────────────────────────────
@@ -22,6 +22,10 @@ RUN npm install -g serve@14
 
 COPY --from=build /app/dist ./dist
 
+# entrypoint: replace placeholder with real VITE_API_BASE env var, then serve
+COPY entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
+
 EXPOSE 10000
 
-CMD ["serve", "-s", "dist", "-l", "10000"]
+CMD ["./entrypoint.sh"]
