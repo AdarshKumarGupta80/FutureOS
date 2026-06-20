@@ -1,4 +1,4 @@
-databases:
+ databases:
   - name: futureos-mysql
     databaseName: futureos
     user: futureos
@@ -30,8 +30,14 @@ services:
     plan: free
     region: oregon
     envVars:
-      - key: DB_URL
-        value: jdbc:mysql://${futureos-mysql.host}:${futureos-mysql.port}/futureos?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - key: DB_HOST
+        fromDatabase:
+          name: futureos-mysql
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: futureos-mysql
+          property: port
       - key: DB_USERNAME
         fromDatabase:
           name: futureos-mysql
