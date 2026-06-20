@@ -41,12 +41,9 @@ services:
           name: futureos-mysql
           property: password
       - key: JWT_SECRET
-        generateValue: true
+        sync: false
       - key: AI_BASE_URL
-        fromService:
-          name: futureos-ai
-          type: web
-          property: host
+        value: https://futureos-ai.onrender.com
 
   - type: web
     name: futureos-frontend

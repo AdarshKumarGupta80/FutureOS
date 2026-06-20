@@ -8,7 +8,8 @@ spring:
     password: ${DB_PASSWORD:}
   jpa:
     hibernate:
-      ddl-auto: update
+      # Use "update" locally, switch to "validate" once schema is stable in prod
+      ddl-auto: ${DDL_AUTO:update}
     properties:
       hibernate:
         format_sql: true
