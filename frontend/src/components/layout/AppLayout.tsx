@@ -175,7 +175,7 @@ export function AppLayout() {
       </header>
 
       {/* ── Main content ── */}
-      <main style={{ paddingLeft: 0 }} className="lg:pl-[228px]">
+      <main className="lg:pl-[228px]">
         <div className="page-enter" style={{ padding: "28px 32px", maxWidth: 1100 }}>
           <Outlet />
         </div>

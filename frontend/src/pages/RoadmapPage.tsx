@@ -167,48 +167,57 @@ function VisualTimeline({ milestones, tasks, startTitle, navigate }: { milestone
   const pct = totalSteps ? Math.round((milestoneDone / totalSteps) * 100) : 0;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Timeline bar */}
       <div className="relative h-2 overflow-hidden rounded-full bg-muted">
         <div className="h-full bg-gradient-to-r from-primary to-emerald-400 transition-all" style={{ width: `${pct}%` }} />
       </div>
 
-      {/* Scrollable timeline nodes */}
-      <div className="flex items-start gap-0 overflow-x-auto pb-3">
-        {items.map((item, idx) => {
-          const isDone = item.status === "DONE" || item.type === "start";
-          const isNext = !isDone && items.slice(0, idx).every((p) => p.status === "DONE" || p.type === "start");
-          const mTasks = tasks.filter((t) => (item as any).id && t.roadmapMilestoneId === (item as any).id);
+      {/* Timeline nodes — fully centered, fluid connectors fill available space */}
+      <div className="w-full overflow-x-auto pb-4">
+        <div className="flex items-start justify-center min-w-max mx-auto px-4">
+          {items.map((item, idx) => {
+            const isDone = item.status === "DONE" || item.type === "start";
+            const isNext = !isDone && items.slice(0, idx).every((p) => p.status === "DONE" || p.type === "start");
 
-          return (
-            <div key={item.id ?? idx} className="flex shrink-0 items-center">
-              {/* Node column */}
-              <div className="flex shrink-0 flex-col items-center gap-2" style={{ minWidth: 120 }}>
-                <div className={`flex h-12 w-12 items-center justify-center rounded-full border-2 font-bold text-sm transition
-                  ${item.type === "start" ? "border-primary bg-primary text-white" :
-                    item.type === "outcome" ? "border-emerald-400 bg-emerald-100 text-emerald-700" :
-                    isDone ? "border-emerald-400 bg-emerald-500 text-white" :
-                    isNext ? "border-primary bg-primary/10 text-primary" :
-                    "border-border bg-muted text-foreground/50"
-                  }`}
-                >
-                  {item.type === "start" ? "S" : item.type === "outcome" ? "🎯" : isDone ? "✓" : idx}
+            return (
+              <div key={item.id ?? idx} className="flex items-start">
+                {/* Node column */}
+                <div className="flex flex-col items-center gap-3" style={{ minWidth: 140, maxWidth: 160 }}>
+                  {/* Circle */}
+                  <div className={`flex h-14 w-14 items-center justify-center rounded-full border-2 font-bold text-base transition shadow-sm
+                    ${item.type === "start" ? "border-primary bg-primary text-white" :
+                      item.type === "outcome" ? "border-emerald-400 bg-emerald-100 text-emerald-700" :
+                      isDone ? "border-emerald-400 bg-emerald-500 text-white" :
+                      isNext ? "border-primary bg-primary/10 text-primary" :
+                      "border-border bg-muted text-foreground/50"
+                    }`}
+                  >
+                    {item.type === "start" ? "S" : item.type === "outcome" ? "🎯" : isDone ? "✓" : idx}
+                  </div>
+
+                  {/* Label */}
+                  <div className="text-center px-2">
+                    <div className="text-sm font-semibold leading-snug">{item.title}</div>
+                    {item.targetDate && (
+                      <div className="mt-1 text-xs text-foreground/50">{item.targetDate}</div>
+                    )}
+                    {isNext && (
+                      <div className="mt-1.5 rounded bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">Next</div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="text-center px-1">
-                  <div className="text-xs font-semibold leading-tight">{item.title}</div>
-                  {item.targetDate && <div className="mt-0.5 text-[10px] text-foreground/50">{item.targetDate}</div>}
-                  {isNext && <div className="mt-1 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">Next</div>}
-                </div>
+                {/* Connector line — grows to fill space between nodes */}
+                {idx < items.length - 1 && (
+                  <div className="flex items-start pt-7 self-start" style={{ minWidth: 48, flex: "1 1 48px" }}>
+                    <div className={`h-0.5 w-full ${isDone ? "bg-primary" : "bg-border"}`} />
+                  </div>
+                )}
               </div>
-
-              {/* Connector line between nodes */}
-              {idx < items.length - 1 && (
-                <div className={`h-px w-8 shrink-0 ${isDone ? "bg-primary" : "bg-border"}`} />
-              )}
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
       {/* Milestone cards */}
