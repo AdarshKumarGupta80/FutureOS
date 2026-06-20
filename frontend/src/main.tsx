@@ -49,6 +49,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             <Route path="roadmap" element={<RoadmapPage />} />
             <Route path="experiments" element={<LifeExperimentPage />} />
             <Route path="progress" element={<ActionTrackingPage />} />
+            <Route path="progress/:milestoneId" element={<ActionTrackingPage />} />
             <Route path="accountability" element={<AccountabilityPage />} />
             <Route path="continuous-improvement" element={<ContinuousImprovementPage />} />
             <Route path="settings" element={<SettingsPage />} />

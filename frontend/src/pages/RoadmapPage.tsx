@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 import { Map, Zap, BookOpen, Layers, Trophy, Clock } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
@@ -84,7 +85,7 @@ export function RoadmapPage() {
           {/* Visual timeline */}
           <div>
             <h2 className="mb-4 font-bold">Milestone Timeline</h2>
-            <VisualTimeline milestones={milestones} tasks={tasks} startTitle={selected?.title ?? "Start"} />
+            <VisualTimeline milestones={milestones} tasks={tasks} startTitle={selected?.title ?? "Start"} navigate={navigate} />
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -150,7 +151,7 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
   );
 }
 
-function VisualTimeline({ milestones, tasks, startTitle }: { milestones: any[]; tasks: any[]; startTitle: string }) {
+function VisualTimeline({ milestones, tasks, startTitle, navigate }: { milestones: any[]; tasks: any[]; startTitle: string; navigate: (path: string) => void }) {
   const items = [
     { id: "start", title: startTitle, type: "start", status: "DONE", targetDate: null },
     ...milestones.map((m) => ({ ...m, type: "milestone" })),
@@ -207,21 +208,28 @@ function VisualTimeline({ milestones, tasks, startTitle }: { milestones: any[]; 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {milestones.map((m, idx) => {
             const mPct = m.status === "DONE" ? 100 : m.status === "RUNNING" ? 50 : 10;
-            const relatedTasks = tasks.filter((t) => t.description?.includes(m.title));
+            const params = new URLSearchParams({ milestoneId: String(m.id), milestoneTitle: m.title ?? "" });
             return (
-              <Card key={m.id}>
+              <button
+                key={m.id}
+                className="text-left w-full rounded-lg border border-border bg-card p-4 shadow-sm transition hover:border-primary hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
+                onClick={() => navigate(`/progress?${params.toString()}`)}
+                title={`View actions for: ${m.title}`}
+              >
                 <div className="mb-2 flex items-center gap-2">
                   <div className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${m.status === "DONE" ? "bg-emerald-500 text-white" : "bg-muted"}`}>
                     {idx + 1}
                   </div>
                   <span className="text-xs font-semibold uppercase text-foreground/50">{m.status ?? "Pending"}</span>
+                  <ArrowRight size={14} className="ml-auto text-primary opacity-60" />
                 </div>
                 <div className="font-semibold">{m.title}</div>
                 {m.targetDate && <div className="mt-1 text-xs text-foreground/50">Target: {m.targetDate}</div>}
                 <div className="mt-3">
                   <ProgressBar value={mPct} />
                 </div>
-              </Card>
+                <div className="mt-2 text-[11px] text-primary font-medium">Click to track actions →</div>
+              </button>
             );
           })}
         </div>
