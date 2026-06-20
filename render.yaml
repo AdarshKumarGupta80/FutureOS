@@ -50,4 +50,4 @@ services:
     region: oregon
     envVars:
       - key: VITE_API_BASE
-        value: https://futureos-backend.onrender.com
+        value: https://futureos-backend.onrender.com/api
