@@ -1,0 +1,161 @@
+# 🚀 FutureOS — Render Deployment Guide
+
+## Architecture on Render
+```
+[Frontend (React)]  →  [Backend (Spring Boot)]  →  [AI Service (FastAPI)]
+                              ↓
+                      [MySQL (Managed)]
+```
+
+Each service is deployed as a **separate Render Web Service** using Docker.
+
+---
+
+## Step 1 — Push to GitHub
+
+Render deploys from a Git repo. Push your project:
+
+```bash
+git init
+git add .
+git commit -m "chore: prepare for Render deployment"
+git remote add origin https://github.com/YOUR_USERNAME/FutureOS.git
+git push -u origin main
+```
+
+---
+
+## Step 2 — Create Render Account
+
+Go to https://render.com and sign up (free tier available).
+
+---
+
+## Step 3 — Deploy Using Blueprint (Recommended)
+
+1. In Render dashboard → click **"New"** → **"Blueprint"**
+2. Connect your GitHub repo
+3. Render will detect `render.yaml` automatically
+4. Click **"Apply"** — Render will create all 3 services + the MySQL database
+
+---
+
+## Step 4 — Set Secret Environment Variables
+
+After blueprint applies, go into each service and set these secrets:
+
+### futureos-ai service:
+| Variable | Value |
+|----------|-------|
+| `GROQ_API_KEY` | Your Groq key from https://console.groq.com (FREE) |
+| `OPENAI_API_KEY` | Your OpenAI key (fallback, optional) |
+
+**Groq is recommended** — it's free and faster than OpenAI for this use case.  
+Model `llama-3.3-70b-versatile` is already configured in `render.yaml`.
+
+---
+
+## Step 5 — Update Service URLs After First Deploy
+
+After your first deploy, Render assigns public URLs like:
+- `https://futureos-ai.onrender.com`
+- `https://futureos-backend.onrender.com`
+- `https://futureos-frontend.onrender.com`
+
+You **must** update two places:
+
+### In render.yaml (then re-deploy):
+```yaml
+# Backend service — AI_BASE_URL:
+value: https://futureos-ai.onrender.com   # ← your actual AI service URL
+
+# Frontend service — VITE_API_BASE:
+value: https://futureos-backend.onrender.com/api  # ← your actual backend URL
+```
+
+**OR** set them directly in the Render dashboard under each service's Environment tab.
+
+---
+
+## Step 6 — Database Initialization
+
+The MySQL database on Render (PlanetScale or Render's managed MySQL) will be empty.  
+Spring Boot auto-creates tables via `ddl-auto: update` on first boot.
+
+If you want demo data, connect to the DB and run:
+```bash
+# Get the connection string from Render dashboard → futureos-mysql → Connect
+mysql -h <host> -u futureos -p futureos < database/schema.sql
+```
+
+---
+
+## Deploy Order (Render handles this automatically)
+
+1. MySQL database (starts first)
+2. futureos-ai (FastAPI)
+3. futureos-backend (Spring Boot — waits for DB)
+4. futureos-frontend (React)
+
+---
+
+## ⚠️ Free Tier Limitations
+
+Render's **free tier services sleep after 15 minutes of inactivity**.  
+This means the first request after idle takes ~30–60 seconds to wake up.
+
+**Solution options:**
+- Upgrade to **Starter plan** ($7/month per service) to avoid sleep
+- Use a cron job / uptime monitor to ping `/health` every 10 minutes
+
+---
+
+## Bugs Fixed for Render Deployment
+
+| # | Bug | Fix |
+|---|-----|-----|
+| 1 | `vite.config.ts` was missing — build would fail | Added `frontend/vite.config.ts` |
+| 2 | Frontend served on port 5173, Render expects `$PORT` | Updated Dockerfile to use `$PORT` (10000) |
+| 3 | AI service used hardcoded port 8001, not `$PORT` | Updated Dockerfile CMD to use `${PORT:-8001}` |
+| 4 | Spring Boot didn't read Render's `$PORT` | Added `${PORT:8080}` to `application.yml` |
+| 5 | No SPA fallback — React Router 404s on page refresh | Added `_redirects` file in build stage |
+| 6 | No `render.yaml` — manual setup required | Created complete blueprint file |
+| 7 | `VITE_API_BASE` baked in at Docker build time | Passed as `buildArgs` in render.yaml |
+| 8 | `AI_BASE_URL` hardcoded to localhost | Now set via `render.yaml` env var |
+
+---
+
+## Manual Deploy (Without Blueprint)
+
+If you prefer to create services one by one in the Render dashboard:
+
+### Service 1: futureos-ai
+- Type: Web Service
+- Runtime: Docker
+- Dockerfile path: `./ai-service/Dockerfile`
+- Docker Context: `./ai-service`
+- Env vars: `GROQ_API_KEY`, `AI_MODEL=llama-3.3-70b-versatile`
+
+### Service 2: futureos-backend
+- Type: Web Service  
+- Runtime: Docker
+- Dockerfile path: `./backend/Dockerfile`
+- Docker Context: `./backend`
+- Env vars:
+  - `DB_URL` = your Render MySQL JDBC URL
+  - `DB_USERNAME` = futureos
+  - `DB_PASSWORD` = (from Render MySQL dashboard)
+  - `JWT_SECRET` = (generate a random 64-char string)
+  - `AI_BASE_URL` = https://futureos-ai.onrender.com
+
+### Service 3: futureos-frontend
+- Type: Web Service
+- Runtime: Docker
+- Dockerfile path: `./frontend/Dockerfile`
+- Docker Context: `./frontend`
+- Build Arg: `VITE_API_BASE=https://futureos-backend.onrender.com/api`
+
+### Database: futureos-mysql
+- Type: MySQL (managed)
+- Name: futureos-mysql
+- Plan: Free

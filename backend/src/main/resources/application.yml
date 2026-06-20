@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 spring:
   datasource:
@@ -15,7 +15,7 @@ spring:
     open-in-view: false
 
 futureos:
-  jwt-secret: ${JWT_SECRET:i_am_microservice_and_i_have_secret_messages_and_i_am_long_enough}
+  jwt-secret: ${JWT_SECRET}
   ai-base-url: ${AI_BASE_URL:http://localhost:8001}
 
 logging:

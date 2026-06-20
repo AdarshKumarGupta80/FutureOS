@@ -1,0 +1,84 @@
+# =============================================================================
+# FutureOS — Render Blueprint
+# Deploy all 3 services + 1 managed MySQL database from one file.
+# Docs: https://render.com/docs/blueprint-spec
+# =============================================================================
+
+databases:
+  - name: futureos-mysql
+    databaseName: futureos
+    user: futureos
+    plan: free          # change to "starter" or higher for production
+    region: oregon
+
+services:
+  # ---------------------------------------------------------------------------
+  # 1. AI Service (FastAPI / Python)
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: futureos-ai
+    runtime: docker
+    dockerfilePath: ./ai-service/Dockerfile
+    dockerContext: ./ai-service
+    plan: free
+    region: oregon
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false           # set this in Render dashboard
+      - key: OPENAI_API_KEY
+        sync: false           # set this in Render dashboard (fallback)
+      - key: AI_MODEL
+        value: llama-3.3-70b-versatile
+    healthCheckPath: /health
+    # Render free tier sleeps after inactivity — ai-service needs to stay warm
+    # for the backend. Consider upgrading to starter plan.
+
+  # ---------------------------------------------------------------------------
+  # 2. Backend (Spring Boot / Java)
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: futureos-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    region: oregon
+    envVars:
+      - key: DB_URL
+        value: jdbc:mysql://${futureos-mysql.host}:${futureos-mysql.port}/futureos?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - key: DB_USERNAME
+        fromDatabase:
+          name: futureos-mysql
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: futureos-mysql
+          property: password
+      - key: JWT_SECRET
+        generateValue: true   # Render auto-generates a secure random value
+      - key: AI_BASE_URL
+        fromService:
+          name: futureos-ai
+          type: web
+          property: host
+          # Render provides the internal host; we prepend http:// in the value below
+      # Override AI_BASE_URL with full URL (Render's fromService gives hostname only)
+      - key: AI_BASE_URL
+        value: https://futureos-ai.onrender.com  # UPDATE after first deploy
+
+  # ---------------------------------------------------------------------------
+  # 3. Frontend (React / Vite → static served with `serve`)
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: futureos-frontend
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    plan: free
+    region: oregon
+    buildArgs:
+      - key: VITE_API_BASE
+        value: https://futureos-backend.onrender.com/api  # UPDATE after first deploy
+    envVars:
+      - key: VITE_API_BASE
+        value: https://futureos-backend.onrender.com/api  # UPDATE after first deploy
