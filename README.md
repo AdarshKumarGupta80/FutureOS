@@ -4,6 +4,21 @@
 
 FutureOS is a full-stack MVP for AI-assisted decision intelligence. The app guides users from onboarding through assumption validation, future simulation, gap analysis, roadmap generation, life experiments, action tracking, and accountability.
 
+## Why FutureOS is Different
+
+Most productivity tools help users execute plans.
+
+FutureOS helps users decide which future is worth pursuing before they invest years of effort.
+
+The platform combines:
+- Future simulation
+- Assumption validation
+- Gap analysis
+- AI-generated roadmaps
+- Accountability systems
+
+into a single decision intelligence workStack
+
 ## Stack
 
 - Frontend: React, Vite, TypeScript, TailwindCSS, React Router
