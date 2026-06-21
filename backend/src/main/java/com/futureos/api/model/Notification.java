@@ -11,7 +11,7 @@ public class Notification {
     public Long id;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "user_id", nullable = false)
     public User user;
-    @Column(nullable = false, columnDefinition = "LONGTEXT") public String message;
+    @Column(nullable = false, columnDefinition = "TEXT") public String message;
     public Boolean readFlag = false;
     @Column(nullable = false) public Instant createdAt = Instant.now();
 }

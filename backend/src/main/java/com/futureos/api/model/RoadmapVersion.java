@@ -14,7 +14,7 @@ public class RoadmapVersion {
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "roadmap_id", nullable = false)
     public Roadmap roadmap;
     public Integer version;
-    @Lob @Column(columnDefinition = "LONGTEXT") public String reason;
-    @Lob @Column(nullable = false, columnDefinition = "LONGTEXT") public String snapshotJson;
+    @Lob @Column(columnDefinition = "TEXT") public String reason;
+    @Lob @Column(nullable = false, columnDefinition = "TEXT") public String snapshotJson;
     @Column(nullable = false) public Instant createdAt = Instant.now();
 }

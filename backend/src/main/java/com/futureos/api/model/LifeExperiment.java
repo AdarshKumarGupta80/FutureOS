@@ -22,9 +22,9 @@ public class LifeExperiment {
     /** e.g. "Product Manager" */
     @Column(name = "path_b") public String pathB;
     /** JSON array of {day, pathA: {title, description}, pathB: {title, description}} */
-    @Lob @Column(name = "day_plan_json", columnDefinition = "LONGTEXT") public String dayPlanJson;
+    @Lob @Column(name = "day_plan_json", columnDefinition = "TEXT") public String dayPlanJson;
     /** JSON array of daily check-ins: {day, path, interest, difficulty, enjoyment, notes} */
-    @Lob @Column(name = "checkins_json", columnDefinition = "LONGTEXT") public String checkinsJson;
+    @Lob @Column(name = "checkins_json", columnDefinition = "TEXT") public String checkinsJson;
     /** Filled in once the user finishes all check-ins and requests a verdict */
-    @Lob @Column(name = "verdict_json", columnDefinition = "LONGTEXT") public String verdictJson;
+    @Lob @Column(name = "verdict_json", columnDefinition = "TEXT") public String verdictJson;
 }

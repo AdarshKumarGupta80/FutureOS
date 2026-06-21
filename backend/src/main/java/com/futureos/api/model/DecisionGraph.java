@@ -14,7 +14,7 @@ public class DecisionGraph {
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "roadmap_id")
     public Roadmap roadmap;
     @Column(nullable = false) public String title;
-    @Lob @Column(nullable = false, columnDefinition = "LONGTEXT") public String nodesJson;
-    @Lob @Column(nullable = false, columnDefinition = "LONGTEXT") public String edgesJson;
+    @Lob @Column(nullable = false, columnDefinition = "TEXT") public String nodesJson;
+    @Lob @Column(nullable = false, columnDefinition = "TEXT") public String edgesJson;
     @Column(nullable = false) public Instant createdAt = Instant.now();
 }
