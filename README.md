@@ -78,6 +78,8 @@ Register or log in, complete onboarding, review clarification cards, simulate fu
 
 When the backend starts, it seeds realistic demo users if they do not already exist:
 
-- `student.ai@futureos.dev` / `password123`
-- `student.founder@futureos.dev` / `password123`
-- `switcher@futureos.dev` / `password123`
+- `ankit@gmail.com` / `1234567890`
+
+
+## Live Link Of Project
+https://futureos-frontend.onrender.com/
