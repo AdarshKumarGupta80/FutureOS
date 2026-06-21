@@ -1,4 +1,7 @@
-const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8080/api";
+const API_BASE: string =
+  (typeof window !== "undefined" && (window as any).__API_BASE__ && (window as any).__API_BASE__ !== "VITE_API_BASE_PLACEHOLDER")
+    ? (window as any).__API_BASE__
+    : (import.meta.env.VITE_API_BASE ?? "http://localhost:8080/api");
 
 export type OnboardingPayload = {
   goal: string;
