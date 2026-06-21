@@ -1,7 +1,7 @@
--- PostgreSQL schema (converted from MySQL)
--- AUTO_INCREMENT → BIGSERIAL
--- LONGTEXT → TEXT
--- Drop CREATE DATABASE / USE (Render creates the DB automatically)
+-- PostgreSQL schema for FutureOS
+-- All LONGTEXT → TEXT (PostgreSQL uses TEXT for unlimited strings)
+-- All AUTO_INCREMENT → BIGSERIAL
+-- Run once on a fresh database; idempotent via IF NOT EXISTS
 
 CREATE TABLE IF NOT EXISTS users (
   id BIGSERIAL PRIMARY KEY,
@@ -185,6 +185,11 @@ CREATE TABLE IF NOT EXISTS life_experiments (
   duration_days INT NOT NULL DEFAULT 7,
   success_metric TEXT,
   status VARCHAR(40) NOT NULL DEFAULT 'PLANNED',
+  path_a VARCHAR(255),
+  path_b VARCHAR(255),
+  day_plan_json TEXT,
+  checkins_json TEXT,
+  verdict_json TEXT,
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 

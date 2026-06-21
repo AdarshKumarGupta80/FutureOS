@@ -30,7 +30,7 @@ services:
     region: oregon
     envVars:
       - key: SPRING_DATASOURCE_URL
-        value: jdbc:postgresql://dpg-d8rf4fsm0tmc73c44320-a/futureos
+        value: jdbc:postgresql://dpg-d8rskbjeo5us73dpret0-a/futureos
       - key: DB_USERNAME
         value: futureos
       - key: DB_PASSWORD
