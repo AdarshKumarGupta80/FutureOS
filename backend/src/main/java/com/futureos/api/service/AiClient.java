@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 
 
 @Service
@@ -23,10 +22,7 @@ public class AiClient {
     public AiClient(RestClient.Builder builder,
                     ObjectMapper objectMapper,
                     @Value("${futureos.ai-base-url}") String baseUrl) {
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(10_000);
-        factory.setReadTimeout(120_000);
-        this.rest = builder.baseUrl(baseUrl).requestFactory(factory).build();
+        this.rest = builder.baseUrl(baseUrl).build();
         this.objectMapper = objectMapper;
         log.info("FutureOS AiClient initialised — AI base URL: {}", baseUrl);
     }
