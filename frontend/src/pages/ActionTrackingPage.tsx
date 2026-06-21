@@ -73,10 +73,23 @@ export function ActionTrackingPage() {
   useEffect(loadDashboard, [milestoneId]);
 
   // ---------- task toggle ----------
-  function toggleTask(id: number) {
+  async function toggleTask(id: number) {
+    const current = taskStates.find((ts) => ts.task.id === id);
+    if (!current) return;
+    const newCompleted = !current.completed;
+    // Optimistically update UI
     setTaskStates((prev) =>
-      prev.map((ts) => (ts.task.id === id ? { ...ts, completed: !ts.completed } : ts))
+      prev.map((ts) => (ts.task.id === id ? { ...ts, completed: newCompleted } : ts))
     );
+    // Persist to backend
+    try {
+      await api.updateTask(id, newCompleted ? "DONE" : "TODO");
+    } catch {
+      // Revert on failure
+      setTaskStates((prev) =>
+        prev.map((ts) => (ts.task.id === id ? { ...ts, completed: !newCompleted } : ts))
+      );
+    }
   }
 
   // ---------- progress log ----------
