@@ -29,6 +29,11 @@ public class WorkflowController {
         this.objectMapper = objectMapper;
     }
 
+    @GetMapping("/health")
+    public Map<String, Object> health() {
+        return Map.of("status", "ok");
+    }
+
     @GetMapping("/dashboard")
     public Map<String, Object> dashboard() {
         return workflow.dashboard(currentUser.get());
