@@ -212,6 +212,7 @@ def openai_json(system: str, payload: dict[str, Any]) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 @app.get("/health")
+@app.head("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
 
