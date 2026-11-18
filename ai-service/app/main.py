@@ -194,7 +194,7 @@ def openai_json(system: str, payload: dict[str, Any]) -> dict[str, Any]:
                        response_format={"type": "json_object"},
             temperature=0.35,
         )
-        content = response.choices[0].message.content
+               content = response.choices[0].message.content
         if not content:
             raise ValueError("AI model returned an empty response.")
         result = json.loads(content)
@@ -202,10 +202,10 @@ def openai_json(system: str, payload: dict[str, Any]) -> dict[str, Any]:
         return result
     except HTTPException:
         raise
-      except Exception as exc:
+    except Exception as exc:
         body = getattr(getattr(exc, "response", None), "text", "")
         print(f"[FutureOS FastAPI]   ✗ AI error: {exc} | {body}", flush=True)
-        raise HTTPException(status_code=502, detail=f"AI request failed: {exc} | {body}") from exc 
+        raise HTTPException(status_code=502, detail=f"AI request failed: {exc} | {body}") from exc
 
 
 # ---------------------------------------------------------------------------
