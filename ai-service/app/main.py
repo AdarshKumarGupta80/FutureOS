@@ -236,7 +236,7 @@ def future_simulation(request: FutureSimulationRequest) -> dict[str, Any]:
         '"opportunities":"...","risks":"...","tradeoffs":"...","lifestyleImpact":"...",'
         '"skillsRequired":"...","timeline":"...","assumptionsUsed":"...","oneYearOutlook":"...",'
         '"threeYearOutlook":"...","fiveYearOutlook":"..."}]'
-        "}.     " Generate exactly 3 future branches and at most 3 clarification cards. "
+        "}. Generate exactly 3 future branches and at most 3 clarification cards. "
         "Scores must be 0-100. Keep every text field to one or two short sentences. "
         "Confidence must be lower when evidence is weak."
     )
