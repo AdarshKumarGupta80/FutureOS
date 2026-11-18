@@ -236,7 +236,8 @@ def future_simulation(request: FutureSimulationRequest) -> dict[str, Any]:
         '"opportunities":"...","risks":"...","tradeoffs":"...","lifestyleImpact":"...",'
         '"skillsRequired":"...","timeline":"...","assumptionsUsed":"...","oneYearOutlook":"...",'
         '"threeYearOutlook":"...","fiveYearOutlook":"..."}]'
-        "}. Generate 3 to 5 future branches. Scores must be 0-100. "
+        "}.     " Generate exactly 3 future branches and at most 3 clarification cards. "
+        "Scores must be 0-100. Keep every text field to one or two short sentences. "
         "Confidence must be lower when evidence is weak."
     )
     return openai_json(system, request.model_dump(exclude_none=True))
