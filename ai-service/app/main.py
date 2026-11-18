@@ -205,7 +205,7 @@ def openai_json(system: str, payload: dict[str, Any]) -> dict[str, Any]:
       except Exception as exc:
         body = getattr(getattr(exc, "response", None), "text", "")
         print(f"[FutureOS FastAPI]   ✗ AI error: {exc} | {body}", flush=True)
-        raise HTTPException(status_code=502, detail=f"AI request failed: {exc} | {body}") from exc
+        raise HTTPException(status_code=502, detail=f"AI request failed: {exc} | {body}") from exc 
 
 
 # ---------------------------------------------------------------------------
