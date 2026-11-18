@@ -191,10 +191,10 @@ def openai_json(system: str, payload: dict[str, Any]) -> dict[str, Any]:
                 {"role": "system", "content": system},
                 {"role": "user", "content": json.dumps(payload, ensure_ascii=True)},
             ],
-                       response_format={"type": "json_object"},
+            response_format={"type": "json_object"},
             temperature=0.35,
         )
-               content = response.choices[0].message.content
+        content = response.choices[0].message.content
         if not content:
             raise ValueError("AI model returned an empty response.")
         result = json.loads(content)
