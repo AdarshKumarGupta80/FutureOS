@@ -191,8 +191,9 @@ def openai_json(system: str, payload: dict[str, Any]) -> dict[str, Any]:
                 {"role": "system", "content": system},
                 {"role": "user", "content": json.dumps(payload, ensure_ascii=True)},
             ],
-            response_format={"type": "json_object"},
+                       response_format={"type": "json_object"},
             temperature=0.35,
+            reasoning_effort="low",
         )
         content = response.choices[0].message.content
         if not content:
