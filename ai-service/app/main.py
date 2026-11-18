@@ -185,7 +185,7 @@ def openai_json(system: str, payload: dict[str, Any]) -> dict[str, Any]:
     client, model = get_ai_client()
     try:
         print(f"[FutureOS FastAPI]   → sending to model {model}, keys: {list(payload.keys())}", flush=True)
-        response = client.chat.completions.create(
+        response = client.with_options(timeout=50.0, max_retries=1).chat.completions.create(
             model=model,
             messages=[
                 {"role": "system", "content": system},
@@ -193,6 +193,7 @@ def openai_json(system: str, payload: dict[str, Any]) -> dict[str, Any]:
             ],
             response_format={"type": "json_object"},
             temperature=0.35,
+            reasoning_effort="low",
         )
         content = response.choices[0].message.content
         if not content:
