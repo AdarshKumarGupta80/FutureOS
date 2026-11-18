@@ -153,17 +153,17 @@ class AccountabilityRequest(BaseModel):
 def get_ai_client() -> tuple[OpenAI, str]:
     """
     Returns (OpenAI-compatible client, model_name).
-    Prefers Groq if GROQ_API_KEY is set, falls back to OpenAI.
+    Prefers Gemini if GEMINI_API_KEY is set, falls back to OpenAI.
     """
-    groq_key = os.getenv("GROQ_API_KEY", "").strip()
+    gemini_key = os.getenv("GEMINI_API_KEY", "").strip()
     openai_key = os.getenv("OPENAI_API_KEY", "").strip()
 
-    if groq_key:
-        model = os.getenv("AI_MODEL", "llama-3.3-70b-versatile")
-        print(f"[FutureOS FastAPI] Using Groq — model: {model}", flush=True)
+    if gemini_key:
+        model = os.getenv("AI_MODEL", "gemini-3.8-flash")
+        print(f"[FutureOS FastAPI] Using Gemini — model: {model}", flush=True)
         client = OpenAI(
-            api_key=groq_key,
-            base_url="https://api.groq.com/openai/v1",
+            api_key=gemini_key,
+            base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
         )
         return client, model
 
@@ -176,7 +176,7 @@ def get_ai_client() -> tuple[OpenAI, str]:
         status_code=503,
         detail=(
             "No AI API key configured. "
-            "Set GROQ_API_KEY (recommended) or OPENAI_API_KEY in your .env file."
+            "Set GEMINI_API_KEY (recommended) or OPENAI_API_KEY in your .env file."
         ),
     )
 
