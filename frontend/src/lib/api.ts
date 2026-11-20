@@ -3,6 +3,17 @@ const API_BASE: string =
     ? (window as any).__API_BASE__
     : (import.meta.env.VITE_API_BASE ?? "http://localhost:8080/api");
 
+// Render's free tier puts idle services to sleep, and each one can take up to a
+// minute to wake. Ping both as soon as the app loads so they are already awake by
+// the time the user clicks "Generate". Errors are ignored: this is only a wake-up call.
+const AI_BASE = "https://futureos-ai.onrender.com";
+if (typeof window !== "undefined") {
+  fetch(`${API_BASE}/health`).catch(() => {});
+  if (!API_BASE.includes("localhost")) {
+    fetch(`${AI_BASE}/health`, { mode: "no-cors" }).catch(() => {});
+  }
+}
+
 export type OnboardingPayload = {
   goal: string;
   biggestConfusion: string;
