@@ -1,11 +1,10 @@
 import json
 import os
+import time
 from pathlib import Path
 from typing import Any
 
-# Load .env automatically so the service works when run manually with uvicorn
-# (Docker Compose injects env vars directly; this is a no-op in that case).
-# Searches: ai-service/.env  →  project-root/.env  →  already-set env vars win.
+
 try:
     from dotenv import load_dotenv
     _here = Path(__file__).resolve().parent.parent          # ai-service/
@@ -24,22 +23,6 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 app = FastAPI(title="FutureOS AI Service")
 
 
-# ---------------------------------------------------------------------------
-# ASGI-level logging middleware — avoids the BaseHTTPMiddleware body-drain bug.
-#
-# Root cause of the original empty-body bug:
-#   The previous implementation used @app.middleware("http") which is built on
-#   Starlette's BaseHTTPMiddleware.  That middleware reads the body via
-#   `await request.body()`, which consumes the underlying ASGI receive stream.
-#   The patch `request._receive = receive` only replaces the attribute on the
-#   *current* Request object; however, `call_next()` internally creates a brand-
-#   new Request from the original ASGI scope + the *original* (now exhausted)
-#   receive callable, so the downstream endpoint always saw 0 bytes.
-#
-# Fix: implement a raw ASGI middleware that wraps the receive callable at the
-#   scope level before the body is ever consumed, ensuring every reader —
-#   including the one inside call_next / the endpoint — gets the full body.
-# ---------------------------------------------------------------------------
 class RequestLoggingMiddleware:
     """Pure ASGI middleware that logs request bodies without consuming them."""
 
@@ -97,9 +80,6 @@ class RequestLoggingMiddleware:
 app.add_middleware(RequestLoggingMiddleware)
 
 
-# ---------------------------------------------------------------------------
-# Pydantic request models
-# ---------------------------------------------------------------------------
 
 class FutureSimulationRequest(BaseModel):
     goal: str | None = None
@@ -146,9 +126,20 @@ class AccountabilityRequest(BaseModel):
     recentLogs: list[str] = []
 
 
-# ---------------------------------------------------------------------------
-# AI client factory
-# ---------------------------------------------------------------------------
+
+
+_client_cache: dict[tuple[str, str], OpenAI] = {}
+
+
+def _cached_client(api_key: str, base_url: str | None = None) -> OpenAI:
+    """Reuse one OpenAI client (and its HTTPS connection pool) across requests."""
+    cache_key = (api_key, base_url or "")
+    client = _client_cache.get(cache_key)
+    if client is None:
+        client = OpenAI(api_key=api_key, base_url=base_url) if base_url else OpenAI(api_key=api_key)
+        _client_cache[cache_key] = client
+    return client
+
 
 def get_ai_client() -> tuple[OpenAI, str]:
     """
@@ -161,16 +152,16 @@ def get_ai_client() -> tuple[OpenAI, str]:
     if gemini_key:
         model = os.getenv("AI_MODEL", "gemini-3.8-flash")
         print(f"[FutureOS FastAPI] Using Gemini — model: {model}", flush=True)
-        client = OpenAI(
-            api_key=gemini_key,
-            base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+        client = _cached_client(
+            gemini_key,
+            "https://generativelanguage.googleapis.com/v1beta/openai/",
         )
         return client, model
 
     if openai_key:
         model = os.getenv("AI_MODEL", os.getenv("OPENAI_MODEL", "gpt-4.1-mini"))
         print(f"[FutureOS FastAPI] Using OpenAI — model: {model}", flush=True)
-        return OpenAI(api_key=openai_key), model
+        return _cached_client(openai_key), model
 
     raise HTTPException(
         status_code=503,
@@ -185,6 +176,7 @@ def openai_json(system: str, payload: dict[str, Any]) -> dict[str, Any]:
     client, model = get_ai_client()
     try:
         print(f"[FutureOS FastAPI]   → sending to model {model}, keys: {list(payload.keys())}", flush=True)
+        started = time.perf_counter()
         response = client.with_options(timeout=50.0, max_retries=1).chat.completions.create(
             model=model,
             messages=[
@@ -194,6 +186,11 @@ def openai_json(system: str, payload: dict[str, Any]) -> dict[str, Any]:
             response_format={"type": "json_object"},
             temperature=0.35,
             reasoning_effort="low",
+        )
+        print(
+            f"[FutureOS FastAPI]   LLM call took {time.perf_counter() - started:.1f}s "
+            f"usage={getattr(response, 'usage', None)}",
+            flush=True,
         )
         content = response.choices[0].message.content
         if not content:
@@ -209,9 +206,7 @@ def openai_json(system: str, payload: dict[str, Any]) -> dict[str, Any]:
         raise HTTPException(status_code=502, detail=f"AI request failed: {exc} | {body}") from exc
 
 
-# ---------------------------------------------------------------------------
-# Endpoints
-# ---------------------------------------------------------------------------
+
 
 @app.get("/health")
 @app.head("/health")
@@ -239,7 +234,7 @@ def future_simulation(request: FutureSimulationRequest) -> dict[str, Any]:
         '"skillsRequired":"...","timeline":"...","assumptionsUsed":"...","oneYearOutlook":"...",'
         '"threeYearOutlook":"...","fiveYearOutlook":"..."}]'
         "}. Generate exactly 3 future branches and at most 3 clarification cards. "
-        "Scores must be 0-100. Keep every text field to one or two short sentences. "
+        "Scores must be 0-100. Keep every text field to ONE short sentence of at most 20 words. "
         "Confidence must be lower when evidence is weak."
     )
     return openai_json(system, request.model_dump(exclude_none=True))
@@ -303,9 +298,6 @@ def accountability(request: AccountabilityRequest) -> dict[str, Any]:
     return openai_json(system, request.model_dump())
 
 
-# ---------------------------------------------------------------------------
-# Life Experiment endpoints
-# ---------------------------------------------------------------------------
 
 class LifeExperimentRequest(BaseModel):
     pathA: str
